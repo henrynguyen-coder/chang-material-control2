@@ -8,7 +8,6 @@
     "start": "node server.js",
     "migrate": "node src/database/migrations/runner.js",
     "seed": "node src/database/seed.js",
-    "migrate": "node src/database/migrations/runner.js",
     "test": "node test/crud_test.js"
   },
   "keywords": [

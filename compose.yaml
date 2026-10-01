@@ -1,0 +1,14 @@
+services:
+  chang-material-control:
+    build: .
+    restart: unless-stopped
+    environment:
+      PORT: "3000"
+      CHANG_MATERIAL_DB_PATH: /var/lib/chang/chang_material_control.db
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - chang-material-db:/var/lib/chang
+
+volumes:
+  chang-material-db:
