@@ -17,5 +17,8 @@
     "restaurant-management"
   ],
   "author": "CHANG F&B Corporate Operations",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "pg": "^8.23.1"
+  }
 }
