@@ -5,7 +5,7 @@
   "main": "server.js",
   "type": "module",
   "scripts": {
-    "start": "node server.js",
+    "start": "npm run migrate && node server.js",
     "migrate": "node src/database/migrations/runner.js",
     "seed": "node src/database/seed.js",
     "test": "node test/crud_test.js"
