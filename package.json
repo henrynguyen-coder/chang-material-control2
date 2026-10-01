@@ -1,0 +1,22 @@
+{
+  "name": "chang-material-control",
+  "version": "1.0.0",
+  "description": "CHANG MATERIAL CONTROL - Daily Shift Material Check (15 Restaurants)",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "migrate": "node src/database/migrations/runner.js",
+    "seed": "node src/database/seed.js",
+    "migrate": "node src/database/migrations/runner.js",
+    "test": "node test/crud_test.js"
+  },
+  "keywords": [
+    "material-control",
+    "fnb-operations",
+    "chang-thai",
+    "restaurant-management"
+  ],
+  "author": "CHANG F&B Corporate Operations",
+  "license": "ISC"
+}

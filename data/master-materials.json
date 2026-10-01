@@ -1,0 +1,242 @@
+[
+  {
+    "material_code": null,
+    "material_name": "Chả cá tomyum",
+    "department": "BOH",
+    "category": null,
+    "unit": null,
+    "is_mandatory": null,
+    "photo_required": null,
+    "is_active": true
+  },
+  {
+    "material_code": null,
+    "material_name": "Semi bánh cá trê",
+    "department": "BOH",
+    "category": null,
+    "unit": null,
+    "is_mandatory": null,
+    "photo_required": null,
+    "is_active": true
+  },
+  {
+    "material_code": null,
+    "material_name": "Mực đã sơ chế",
+    "department": "BOH",
+    "category": null,
+    "unit": null,
+    "is_mandatory": null,
+    "photo_required": null,
+    "is_active": true
+  },
+  {
+    "material_code": null,
+    "material_name": "Tôm đã sơ chế",
+    "department": "BOH",
+    "category": null,
+    "unit": null,
+    "is_mandatory": null,
+    "photo_required": null,
+    "is_active": true
+  },
+  {
+    "material_code": null,
+    "material_name": "Cua đã sơ chế",
+    "department": "BOH",
+    "category": null,
+    "unit": null,
+    "is_mandatory": null,
+    "photo_required": null,
+    "is_active": true
+  },
+  {
+    "material_code": null,
+    "material_name": "Đồ chua",
+    "department": "BOH",
+    "category": null,
+    "unit": null,
+    "is_mandatory": null,
+    "photo_required": null,
+    "is_active": true
+  },
+  {
+    "material_code": null,
+    "material_name": "Tôm khô",
+    "department": "BOH",
+    "category": null,
+    "unit": null,
+    "is_mandatory": null,
+    "photo_required": null,
+    "is_active": true
+  },
+  {
+    "material_code": null,
+    "material_name": "Hạt điều",
+    "department": "BOH",
+    "category": null,
+    "unit": null,
+    "is_mandatory": null,
+    "photo_required": null,
+    "is_active": true
+  },
+  {
+    "material_code": null,
+    "material_name": "Gà nướng",
+    "department": "BOH",
+    "category": null,
+    "unit": null,
+    "is_mandatory": null,
+    "photo_required": null,
+    "is_active": true
+  },
+  {
+    "material_code": null,
+    "material_name": "Má heo nướng",
+    "department": "BOH",
+    "category": null,
+    "unit": null,
+    "is_mandatory": null,
+    "photo_required": null,
+    "is_active": true
+  },
+  {
+    "material_code": null,
+    "material_name": "Vẹm đã sơ chế",
+    "department": "BOH",
+    "category": null,
+    "unit": null,
+    "is_mandatory": null,
+    "photo_required": null,
+    "is_active": true
+  },
+  {
+    "material_code": null,
+    "material_name": "Các loại rau",
+    "department": "BOH",
+    "category": null,
+    "unit": null,
+    "is_mandatory": null,
+    "photo_required": null,
+    "is_active": true
+  },
+  {
+    "material_code": null,
+    "material_name": "Các loại sốt",
+    "department": "BOH",
+    "category": null,
+    "unit": null,
+    "is_mandatory": null,
+    "photo_required": null,
+    "is_active": true
+  },
+  {
+    "material_code": null,
+    "material_name": "Các loại base",
+    "department": "BOH",
+    "category": null,
+    "unit": null,
+    "is_mandatory": null,
+    "photo_required": null,
+    "is_active": true
+  },
+  {
+    "material_code": null,
+    "material_name": "Xôi nếp",
+    "department": "BOH",
+    "category": null,
+    "unit": null,
+    "is_mandatory": null,
+    "photo_required": null,
+    "is_active": true
+  },
+  {
+    "material_code": null,
+    "material_name": "Xốt BBQ",
+    "department": "BOH",
+    "category": null,
+    "unit": null,
+    "is_mandatory": null,
+    "photo_required": null,
+    "is_active": true
+  },
+  {
+    "material_code": null,
+    "material_name": "Tóp mỡ",
+    "department": "BOH",
+    "category": null,
+    "unit": null,
+    "is_mandatory": null,
+    "photo_required": null,
+    "is_active": true
+  },
+  {
+    "material_code": null,
+    "material_name": "Xốt cốt dừa",
+    "department": "FOH",
+    "category": null,
+    "unit": null,
+    "is_mandatory": null,
+    "photo_required": null,
+    "is_active": true
+  },
+  {
+    "material_code": null,
+    "material_name": "Hoa cúc",
+    "department": "FOH",
+    "category": null,
+    "unit": null,
+    "is_mandatory": null,
+    "photo_required": null,
+    "is_active": true
+  },
+  {
+    "material_code": null,
+    "material_name": "Xoài ánh tím",
+    "department": "FOH",
+    "category": null,
+    "unit": null,
+    "is_mandatory": null,
+    "photo_required": null,
+    "is_active": true
+  },
+  {
+    "material_code": null,
+    "material_name": "Các base trà thảo mộc",
+    "department": "FOH",
+    "category": null,
+    "unit": null,
+    "is_mandatory": null,
+    "photo_required": null,
+    "is_active": true
+  },
+  {
+    "material_code": null,
+    "material_name": "Các base trà sữa thái",
+    "department": "FOH",
+    "category": null,
+    "unit": null,
+    "is_mandatory": null,
+    "photo_required": null,
+    "is_active": true
+  },
+  {
+    "material_code": null,
+    "material_name": "Dừa trái",
+    "department": "FOH",
+    "category": null,
+    "unit": null,
+    "is_mandatory": null,
+    "photo_required": null,
+    "is_active": true
+  },
+  {
+    "material_code": null,
+    "material_name": "Các loại trái cây",
+    "department": "FOH",
+    "category": null,
+    "unit": null,
+    "is_mandatory": null,
+    "photo_required": null,
+    "is_active": true
+  }
+]
