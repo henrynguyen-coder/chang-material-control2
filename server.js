@@ -2,7 +2,8 @@ import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { assertMigrationsApplied } from './src/database/migrations/runner.js';
+import { runSeed } from './src/database/seed.js';
+import { closeDb } from './src/database/db.js';
 import { AuthController } from './src/controllers/AuthController.js';
 import { RestaurantController } from './src/controllers/RestaurantController.js';
 import { AssessmentController } from './src/controllers/AssessmentController.js';
@@ -16,9 +17,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const PORT = process.env.PORT || 3000;
-
-// Startup verifies schema readiness but never seeds or migrates business data.
-assertMigrationsApplied();
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=UTF-8',
@@ -226,9 +224,17 @@ const server = http.createServer(async (req, res) => {
   });
 });
 
+await runSeed();
 server.listen(PORT, () => {
-  console.log(`===================================================`);
-  console.log(` CHANG MATERIAL CONTROL SYSTEM RUNNING AT:`);
+  console.log('===================================================');
+  console.log(' CHANG MATERIAL CONTROL SYSTEM RUNNING AT:');
   console.log(` http://localhost:${PORT}`);
-  console.log(`===================================================`);
+  console.log('===================================================');
 });
+
+for (const signal of ['SIGINT', 'SIGTERM']) {
+  process.on(signal, () => server.close(async () => {
+    await closeDb();
+    process.exit(0);
+  }));
+}

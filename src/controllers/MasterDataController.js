@@ -6,22 +6,22 @@ import { AuditLogModel } from '../models/AuditLogModel.js';
 import { requireAuth, requireRole } from '../middleware/authMiddleware.js';
 
 export class MasterDataController {
-  static getMaterials(req, res, searchParams) {
-    const user = requireAuth(req, res);
+  static async getMaterials(req, res, searchParams) {
+    const user = await requireAuth(req, res);
     if (!user) return;
     const includeInactive = searchParams?.get('include_inactive') === 'true';
     if (includeInactive && !requireRole('ADMIN')(user, res)) return;
-    const materials = MaterialModel.getAll({ includeInactive });
+    const materials = await MaterialModel.getAll({ includeInactive });
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ materials }));
   }
 
-  static createMaterial(req, body, res) {
-    const user = requireAuth(req, res);
+  static async createMaterial(req, body, res) {
+    const user = await requireAuth(req, res);
     if (!user || !requireRole('ADMIN')(user, res)) return;
     try {
-      const material = MaterialModel.create(body || {});
-      AuditLogModel.log({ user_id: user.id, action: 'MATERIAL UPDATE', entity_type: 'MATERIAL', entity_id: material.id, new_values: material });
+      const material = await MaterialModel.create(body || {});
+      await AuditLogModel.log({ user_id: user.id, action: 'MATERIAL UPDATE', entity_type: 'MATERIAL', entity_id: material.id, new_values: material });
       res.writeHead(201, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ message: 'Tạo vật tư thành công', material }));
     } catch (error) {
@@ -30,14 +30,14 @@ export class MasterDataController {
     }
   }
 
-  static updateMaterial(req, id, body, res) {
-    const user = requireAuth(req, res);
+  static async updateMaterial(req, id, body, res) {
+    const user = await requireAuth(req, res);
     if (!user || !requireRole('ADMIN')(user, res)) return;
 
     try {
-      const oldMaterial = MaterialModel.getById(id);
-      const material = MaterialModel.update(id, body || {});
-      AuditLogModel.log({
+      const oldMaterial = await MaterialModel.getById(id);
+      const material = await MaterialModel.update(id, body || {});
+      await AuditLogModel.log({
         user_id: user.id,
         action: 'MATERIAL UPDATE',
         entity_type: 'MATERIAL',
@@ -53,13 +53,13 @@ export class MasterDataController {
     }
   }
 
-  static setMaterialStatus(req, id, body, res) {
-    const user = requireAuth(req, res);
+  static async setMaterialStatus(req, id, body, res) {
+    const user = await requireAuth(req, res);
     if (!user || !requireRole('ADMIN')(user, res)) return;
     try {
-      const oldMaterial = MaterialModel.getById(id);
-      const material = MaterialModel.setActive(id, body?.is_active);
-      AuditLogModel.log({
+      const oldMaterial = await MaterialModel.getById(id);
+      const material = await MaterialModel.setActive(id, body?.is_active);
+      await AuditLogModel.log({
         user_id: user.id,
         action: 'MATERIAL UPDATE',
         entity_type: 'MATERIAL',
@@ -75,35 +75,35 @@ export class MasterDataController {
     }
   }
 
-  static getChecklists(req, res) {
-    const user = requireAuth(req, res);
+  static async getChecklists(req, res) {
+    const user = await requireAuth(req, res);
     if (!user) return;
-    const checklists = ChecklistModel.getAll();
+    const checklists = await ChecklistModel.getAll();
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ checklists }));
   }
 
-  static getChecklistItems(req, checklistId, searchParams, res) {
-    const user = requireAuth(req, res);
+  static async getChecklistItems(req, checklistId, searchParams, res) {
+    const user = await requireAuth(req, res);
     if (!user) return;
     if (user.role_code === 'ADMIN') {
-      const assignments = ChecklistModel.getAssignments(checklistId, {
+      const assignments = await ChecklistModel.getAssignments(checklistId, {
         department: searchParams?.get('department') || null
       });
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ assignments }));
       return;
     }
-    const items = ChecklistModel.getItems(checklistId);
+    const items = await ChecklistModel.getItems(checklistId);
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ items }));
   }
 
-  static getChecklistAssignments(req, checklistId, searchParams, res) {
-    const user = requireAuth(req, res);
+  static async getChecklistAssignments(req, checklistId, searchParams, res) {
+    const user = await requireAuth(req, res);
     if (!user || !requireRole('ADMIN')(user, res)) return;
     try {
-      const assignments = ChecklistModel.getAssignments(checklistId, {
+      const assignments = await ChecklistModel.getAssignments(checklistId, {
         department: searchParams.get('department') || null
       });
       res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -114,12 +114,12 @@ export class MasterDataController {
     }
   }
 
-  static addChecklistItem(req, checklistId, body, res) {
-    const user = requireAuth(req, res);
+  static async addChecklistItem(req, checklistId, body, res) {
+    const user = await requireAuth(req, res);
     if (!user || !requireRole('ADMIN')(user, res)) return;
     try {
-      const item = ChecklistModel.addItem(checklistId, body || {});
-      AuditLogModel.log({ user_id: user.id, action: 'ADMIN UPDATE', entity_type: 'CHECKLIST_ITEM', entity_id: item.id, new_values: item });
+      const item = await ChecklistModel.addItem(checklistId, body || {});
+      await AuditLogModel.log({ user_id: user.id, action: 'ADMIN UPDATE', entity_type: 'CHECKLIST_ITEM', entity_id: item.id, new_values: item });
       res.writeHead(201, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ message: 'Đã gán Material vào Checklist', item }));
     } catch (error) {
@@ -128,13 +128,13 @@ export class MasterDataController {
     }
   }
 
-  static updateChecklistItem(req, itemId, body, res) {
-    const user = requireAuth(req, res);
+  static async updateChecklistItem(req, itemId, body, res) {
+    const user = await requireAuth(req, res);
     if (!user || !requireRole('ADMIN')(user, res)) return;
     try {
-      const oldItem = ChecklistModel.getAssignmentsForItem(itemId);
-      const item = ChecklistModel.updateItem(itemId, body || {});
-      AuditLogModel.log({ user_id: user.id, action: 'ADMIN UPDATE', entity_type: 'CHECKLIST_ITEM', entity_id: item.id, old_values: oldItem, new_values: item });
+      const oldItem = await ChecklistModel.getAssignmentsForItem(itemId);
+      const item = await ChecklistModel.updateItem(itemId, body || {});
+      await AuditLogModel.log({ user_id: user.id, action: 'ADMIN UPDATE', entity_type: 'CHECKLIST_ITEM', entity_id: item.id, old_values: oldItem, new_values: item });
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ message: 'Đã cập nhật ChecklistItem', item }));
     } catch (error) {
@@ -143,13 +143,13 @@ export class MasterDataController {
     }
   }
 
-  static setChecklistItemStatus(req, itemId, body, res) {
-    const user = requireAuth(req, res);
+  static async setChecklistItemStatus(req, itemId, body, res) {
+    const user = await requireAuth(req, res);
     if (!user || !requireRole('ADMIN')(user, res)) return;
     try {
-      const oldItem = ChecklistModel.getAssignmentsForItem(itemId);
-      const item = ChecklistModel.setItemActive(itemId, body?.is_active);
-      AuditLogModel.log({ user_id: user.id, action: 'ADMIN UPDATE', entity_type: 'CHECKLIST_ITEM', entity_id: item.id, old_values: oldItem, new_values: item });
+      const oldItem = await ChecklistModel.getAssignmentsForItem(itemId);
+      const item = await ChecklistModel.setItemActive(itemId, body?.is_active);
+      await AuditLogModel.log({ user_id: user.id, action: 'ADMIN UPDATE', entity_type: 'CHECKLIST_ITEM', entity_id: item.id, old_values: oldItem, new_values: item });
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ message: item.is_active ? 'Đã kích hoạt membership' : 'Đã deactivate membership', item }));
     } catch (error) {
@@ -158,12 +158,12 @@ export class MasterDataController {
     }
   }
 
-  static reorderChecklistItems(req, checklistId, body, res) {
-    const user = requireAuth(req, res);
+  static async reorderChecklistItems(req, checklistId, body, res) {
+    const user = await requireAuth(req, res);
     if (!user || !requireRole('ADMIN')(user, res)) return;
     try {
-      const items = ChecklistModel.reorderItems(checklistId, body?.items);
-      AuditLogModel.log({ user_id: user.id, action: 'ADMIN UPDATE', entity_type: 'CHECKLIST', entity_id: checklistId, new_values: { items } });
+      const items = await ChecklistModel.reorderItems(checklistId, body?.items);
+      await AuditLogModel.log({ user_id: user.id, action: 'ADMIN UPDATE', entity_type: 'CHECKLIST', entity_id: checklistId, new_values: { items } });
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ message: 'Đã cập nhật thứ tự Checklist', items }));
     } catch (error) {
@@ -172,30 +172,30 @@ export class MasterDataController {
     }
   }
 
-  static getRoles(req, res) {
-    const user = requireAuth(req, res);
+  static async getRoles(req, res) {
+    const user = await requireAuth(req, res);
     if (!user) return;
-    const roles = RoleModel.getAll();
+    const roles = await RoleModel.getAll();
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ roles }));
   }
 
-  static getUsers(req, res) {
-    const user = requireAuth(req, res);
+  static async getUsers(req, res) {
+    const user = await requireAuth(req, res);
     if (!user || !requireRole('ADMIN')(user, res)) return;
-    const users = UserModel.getAll();
+    const users = await UserModel.getAll();
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ users }));
   }
 
-  static updateUser(req, id, body, res) {
-    const user = requireAuth(req, res);
+  static async updateUser(req, id, body, res) {
+    const user = await requireAuth(req, res);
     if (!user || !requireRole('ADMIN')(user, res)) return;
 
     try {
-      const oldUser = UserModel.getById(id);
-      const updatedUser = UserModel.update(id, body || {});
-      AuditLogModel.log({
+      const oldUser = await UserModel.getById(id);
+      const updatedUser = await UserModel.update(id, body || {});
+      await AuditLogModel.log({
         user_id: user.id,
         restaurant_id: updatedUser.restaurant_id,
         action: 'USER UPDATE',
@@ -212,12 +212,12 @@ export class MasterDataController {
     }
   }
 
-  static createUser(req, body, res) {
-    const user = requireAuth(req, res);
+  static async createUser(req, body, res) {
+    const user = await requireAuth(req, res);
     if (!user || !requireRole('ADMIN')(user, res)) return;
     try {
-      const newUser = UserModel.create(body || {});
-      AuditLogModel.log({
+      const newUser = await UserModel.create(body || {});
+      await AuditLogModel.log({
         user_id: user.id,
         restaurant_id: newUser.restaurant_id,
         action: 'USER UPDATE',
@@ -233,10 +233,10 @@ export class MasterDataController {
     }
   }
 
-  static getAuditLogs(req, res) {
-    const user = requireAuth(req, res);
+  static async getAuditLogs(req, res) {
+    const user = await requireAuth(req, res);
     if (!user || !requireRole('ADMIN')(user, res)) return;
-    const logs = AuditLogModel.getAll({ limit: 100 });
+    const logs = await AuditLogModel.getAll({ limit: 100 });
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ logs }));
   }

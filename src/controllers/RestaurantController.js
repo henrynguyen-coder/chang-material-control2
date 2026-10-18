@@ -3,13 +3,13 @@ import { AuditLogModel } from '../models/AuditLogModel.js';
 import { requireAuth, requireRole } from '../middleware/authMiddleware.js';
 
 export class RestaurantController {
-  static getAll(req, urlParams, res) {
-    const user = requireAuth(req, res);
+  static async getAll(req, urlParams, res) {
+    const user = await requireAuth(req, res);
     if (!user) return;
 
     // RESTAURANT role only gets their assigned restaurant or filtered list
     if (user.role_code === 'RESTAURANT') {
-      const rest = RestaurantModel.getById(user.restaurant_id);
+      const rest = await RestaurantModel.getById(user.restaurant_id);
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ restaurants: rest ? [rest] : [] }));
       return;
@@ -17,7 +17,7 @@ export class RestaurantController {
 
     if (user.role_code === 'AC_LD') {
       const assignedIds = user.assigned_restaurant_ids || [];
-      const assignedRestaurants = RestaurantModel.getAll({ status: urlParams.get('status') || null })
+      const assignedRestaurants = await RestaurantModel.getAll({ status: urlParams.get('status') || null })
         .filter(restaurant => assignedIds.includes(restaurant.id));
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ restaurants: assignedRestaurants }));
@@ -26,14 +26,14 @@ export class RestaurantController {
 
     const status = urlParams.get('status') || null;
     const search = urlParams.get('search') || null;
-    const restaurants = RestaurantModel.getAll({ status, search });
+    const restaurants = await RestaurantModel.getAll({ status, search });
 
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ restaurants }));
   }
 
-  static getById(req, id, res) {
-    const user = requireAuth(req, res);
+  static async getById(req, id, res) {
+    const user = await requireAuth(req, res);
     if (!user) return;
 
     if (user.role_code === 'RESTAURANT' && user.restaurant_id !== id) {
@@ -48,7 +48,7 @@ export class RestaurantController {
       return;
     }
 
-    const restaurant = RestaurantModel.getById(id);
+    const restaurant = await RestaurantModel.getById(id);
     if (!restaurant) {
       res.writeHead(404, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ error: 'Không tìm thấy nhà hàng' }));
@@ -59,17 +59,17 @@ export class RestaurantController {
     res.end(JSON.stringify({ restaurant }));
   }
 
-  static create(req, body, res) {
-    const user = requireAuth(req, res);
+  static async create(req, body, res) {
+    const user = await requireAuth(req, res);
     if (!user) return;
 
     const checkRole = requireRole('ADMIN');
     if (!checkRole(user, res)) return;
 
     try {
-      const newRestaurant = RestaurantModel.create(body || {});
+      const newRestaurant = await RestaurantModel.create(body || {});
 
-      AuditLogModel.log({
+      await AuditLogModel.log({
         user_id: user.id,
         restaurant_id: newRestaurant.id,
         action: 'CREATE_RESTAURANT',
@@ -89,18 +89,18 @@ export class RestaurantController {
     }
   }
 
-  static update(req, id, body, res) {
-    const user = requireAuth(req, res);
+  static async update(req, id, body, res) {
+    const user = await requireAuth(req, res);
     if (!user) return;
 
     const checkRole = requireRole('ADMIN');
     if (!checkRole(user, res)) return;
 
     try {
-      const oldVal = RestaurantModel.getById(id);
-      const updatedRestaurant = RestaurantModel.update(id, body || {});
+      const oldVal = await RestaurantModel.getById(id);
+      const updatedRestaurant = await RestaurantModel.update(id, body || {});
 
-      AuditLogModel.log({
+      await AuditLogModel.log({
         user_id: user.id,
         restaurant_id: id,
         action: 'ADMIN UPDATE',
@@ -121,18 +121,18 @@ export class RestaurantController {
     }
   }
 
-  static toggleStatus(req, id, body, res) {
-    const user = requireAuth(req, res);
+  static async toggleStatus(req, id, body, res) {
+    const user = await requireAuth(req, res);
     if (!user) return;
 
     const checkRole = requireRole('ADMIN');
     if (!checkRole(user, res)) return;
 
     try {
-      const oldVal = RestaurantModel.getById(id);
-      const updatedRestaurant = RestaurantModel.toggleStatus(id, body?.status);
+      const oldVal = await RestaurantModel.getById(id);
+      const updatedRestaurant = await RestaurantModel.toggleStatus(id, body?.status);
 
-      AuditLogModel.log({
+      await AuditLogModel.log({
         user_id: user.id,
         restaurant_id: id,
         action: 'ADMIN UPDATE',

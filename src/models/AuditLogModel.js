@@ -2,12 +2,25 @@ import { queryAll, executeSql } from '../database/db.js';
 import crypto from 'node:crypto';
 
 export class AuditLogModel {
-  static log({ user_id, restaurant_id, action, entity_type, entity_id, old_values, new_values, ip_address }) {
+  static async log({
+    user_id,
+    restaurant_id,
+    action,
+    entity_type,
+    entity_id,
+    old_values,
+    new_values,
+    ip_address
+  }, db = null) {
+    const executeSqlFn = db?.executeSql || executeSql;
+
     const id = `audit-${crypto.randomBytes(6).toString('hex')}`;
     const now = new Date().toISOString();
 
-    executeSql(
-      `INSERT INTO audit_logs (id, user_id, restaurant_id, action, entity_type, entity_id, old_values, new_values, ip_address, created_at)
+    await executeSqlFn(
+      `INSERT INTO audit_logs
+       (id, user_id, restaurant_id, action, entity_type, entity_id,
+        old_values, new_values, ip_address, created_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         id,
@@ -22,12 +35,19 @@ export class AuditLogModel {
         now
       ]
     );
+
+    return id;
   }
 
   static getAll({ limit = 50 } = {}) {
-    const safeLimit = Math.max(1, Math.min(Number.parseInt(limit, 10) || 50, 500));
+    const safeLimit = Math.max(
+      1,
+      Math.min(Number.parseInt(limit, 10) || 50, 500)
+    );
+
     return queryAll(
-      `SELECT al.*, u.username, u.full_name, r.restaurant_code, r.restaurant_name
+      `SELECT al.*, u.username, u.full_name,
+              r.restaurant_code, r.restaurant_name
        FROM audit_logs al
        LEFT JOIN users u ON al.user_id = u.id
        LEFT JOIN restaurants r ON al.restaurant_id = r.id

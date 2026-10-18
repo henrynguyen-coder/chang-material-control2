@@ -1,4 +1,4 @@
-import { db, executeSql, queryAll } from '../database/db.js';
+import { executeSql, queryAll, withTransaction } from '../database/db.js';
 
 const defaults = [
   { key: 'REPORT_DEFAULT_PERIOD', value: 'DAILY', label: 'Kỳ báo cáo mặc định', type: 'period' },
@@ -7,23 +7,24 @@ const defaults = [
 ];
 
 export class SettingsModel {
-  static getAll() {
-    defaults.forEach(setting => {
-      executeSql(
-        'INSERT OR IGNORE INTO system_settings (setting_key, setting_value) VALUES (?, ?)',
+  static async getAll() {
+    for (const setting of defaults) {
+      await executeSql(
+        'INSERT INTO system_settings (setting_key, setting_value) VALUES (?, ?) ON CONFLICT (setting_key) DO NOTHING',
         [setting.key, setting.value]
       );
-    });
-    const values = new Map(queryAll('SELECT setting_key, setting_value, updated_at FROM system_settings')
+    }
+    const rows = await queryAll('SELECT setting_key, setting_value, updated_at FROM system_settings');
+    const values = new Map(rows
       .map(setting => [setting.setting_key, setting]));
     return defaults.map(setting => ({ ...setting, value: values.get(setting.key)?.setting_value || setting.value, updated_at: values.get(setting.key)?.updated_at || null }));
   }
 
-  static getMap() {
-    return Object.fromEntries(this.getAll().map(setting => [setting.key, setting.value]));
+  static async getMap() {
+    return Object.fromEntries((await this.getAll()).map(setting => [setting.key, setting.value]));
   }
 
-  static update(values, userId) {
+  static async update(values, userId) {
     if (!values || typeof values !== 'object' || Array.isArray(values)) throw new Error('Settings phải là một object');
     const allowed = new Set(defaults.map(setting => setting.key));
     const keys = Object.keys(values);
@@ -44,21 +45,16 @@ export class SettingsModel {
       normalized[key] = value;
     });
 
-    db.exec('BEGIN');
-    try {
-      Object.entries(normalized).forEach(([key, value]) => {
-        executeSql(
+    await withTransaction(async tx => {
+      for (const [key, value] of Object.entries(normalized)) {
+        await tx.executeSql(
           `INSERT INTO system_settings (setting_key, setting_value, updated_by, updated_at)
            VALUES (?, ?, ?, ?)
-           ON CONFLICT(setting_key) DO UPDATE SET setting_value = excluded.setting_value, updated_by = excluded.updated_by, updated_at = excluded.updated_at`,
+           ON CONFLICT(setting_key) DO UPDATE SET setting_value = EXCLUDED.setting_value, updated_by = EXCLUDED.updated_by, updated_at = EXCLUDED.updated_at`,
           [key, value, userId, new Date().toISOString()]
         );
-      });
-      db.exec('COMMIT');
-    } catch (error) {
-      db.exec('ROLLBACK');
-      throw error;
-    }
+      }
+    });
     return this.getAll();
   }
 }

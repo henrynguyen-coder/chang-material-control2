@@ -3,7 +3,7 @@ import { UserModel } from '../models/UserModel.js';
 // In-memory token store: token -> userId
 export const sessionStore = new Map();
 
-export function authenticateToken(req) {
+export async function authenticateToken(req) {
   const authHeader = req.headers['authorization'] || '';
   const token = authHeader.startsWith('Bearer ') ? authHeader.substring(7) : null;
 
@@ -12,7 +12,7 @@ export function authenticateToken(req) {
   }
 
   const userId = sessionStore.get(token);
-  const user = UserModel.getById(userId);
+  const user = await UserModel.getById(userId);
   if (!user?.is_active) {
     sessionStore.delete(token);
     return null;
@@ -20,8 +20,8 @@ export function authenticateToken(req) {
   return user;
 }
 
-export function requireAuth(req, res) {
-  const user = authenticateToken(req);
+export async function requireAuth(req, res) {
+  const user = await authenticateToken(req);
   if (!user) {
     res.writeHead(401, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ error: 'Chưa đăng nhập hoặc phiên làm việc đã hết hạn' }));

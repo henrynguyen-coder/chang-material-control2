@@ -2,8 +2,8 @@ import { AssessmentModel } from '../models/AssessmentModel.js';
 import { requireAuth, requireRole } from '../middleware/authMiddleware.js';
 
 export class AssessmentController {
-  static getAll(req, urlParams, res) {
-    const user = requireAuth(req, res);
+  static async getAll(req, urlParams, res) {
+    const user = await requireAuth(req, res);
     if (!user) return;
 
     const restaurant_id = urlParams.get('restaurant_id') || null;
@@ -13,7 +13,7 @@ export class AssessmentController {
     const to_date = urlParams.get('to_date') || null;
 
     try {
-      const assessments = AssessmentModel.getAll({
+      const assessments = await AssessmentModel.getAll({
         user,
         restaurant_id,
         shift_type,
@@ -30,12 +30,12 @@ export class AssessmentController {
     }
   }
 
-  static getMaterialIssues(req, urlParams, res) {
-    const user = requireAuth(req, res);
+  static async getMaterialIssues(req, urlParams, res) {
+    const user = await requireAuth(req, res);
     if (!user) return;
 
     try {
-      const issues = AssessmentModel.getMaterialIssues({
+      const issues = await AssessmentModel.getMaterialIssues({
         user,
         restaurant_id: urlParams.get('restaurant_id') || null,
         shift_type: urlParams.get('shift_type') || null,
@@ -52,12 +52,12 @@ export class AssessmentController {
     }
   }
 
-  static getById(req, id, res) {
-    const user = requireAuth(req, res);
+  static async getById(req, id, res) {
+    const user = await requireAuth(req, res);
     if (!user) return;
 
     try {
-      const assessment = AssessmentModel.getById(id, user);
+      const assessment = await AssessmentModel.getById(id, user);
       if (!assessment) {
         res.writeHead(404, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: 'Không tìm thấy phiếu kiểm tra' }));
@@ -71,12 +71,12 @@ export class AssessmentController {
     }
   }
 
-  static create(req, body, res) {
-    const user = requireAuth(req, res);
+  static async create(req, body, res) {
+    const user = await requireAuth(req, res);
     if (!user || !requireRole('RESTAURANT')(user, res)) return;
 
     try {
-      const assessment = AssessmentModel.create({ user, ...body });
+      const assessment = await AssessmentModel.create({ user, ...body });
 
       res.writeHead(201, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({

@@ -3,43 +3,29 @@ import { AuditLogModel } from '../models/AuditLogModel.js';
 import { requireAuth, requireRole } from '../middleware/authMiddleware.js';
 
 export class ShiftConfigController {
-  static getAll(req, res) {
-    const user = requireAuth(req, res);
-    if (!user) return;
-
-    const shifts = ShiftConfigModel.getAll();
+  static async getAll(req, res) {
+    const user = await requireAuth(req, res);
+    if (!user || !requireRole('ADMIN')(user, res)) return;
+    const shifts = await ShiftConfigModel.getAll();
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ shifts }));
   }
 
-  static update(req, code, body, res) {
-    const user = requireAuth(req, res);
-    if (!user) return;
-
-    const checkRole = requireRole('ADMIN');
-    if (!checkRole(user, res)) return;
-
+  static async update(req, code, body, res) {
+    const user = await requireAuth(req, res);
+    if (!user || !requireRole('ADMIN')(user, res)) return;
     try {
-      const oldVal = ShiftConfigModel.getByCode(code);
-      const updatedShift = ShiftConfigModel.update(code, body || {});
-
-      AuditLogModel.log({
-        user_id: user.id,
-        action: 'ADMIN UPDATE',
-        entity_type: 'SHIFT_CONFIG',
-        entity_id: code,
-        old_values: oldVal,
-        new_values: updatedShift
+      const oldValue = await ShiftConfigModel.getByCode(code);
+      const shift = await ShiftConfigModel.update(code, body || {});
+      await AuditLogModel.log({
+        user_id: user.id, action: 'ADMIN UPDATE', entity_type: 'SHIFT_CONFIG',
+        entity_id: code, old_values: oldValue, new_values: shift
       });
-
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({
-        message: `Cập nhật deadline cho ${updatedShift.shift_name} thành công (${updatedShift.deadline_time})`,
-        shift: updatedShift
-      }));
-    } catch (err) {
+      res.end(JSON.stringify({ shift }));
+    } catch (error) {
       res.writeHead(400, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: err.message }));
+      res.end(JSON.stringify({ error: error.message }));
     }
   }
 }

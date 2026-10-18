@@ -2,20 +2,17 @@ services:
   - type: web
     name: chang-material-control
     runtime: node
-    plan: starter
+    plan: free
     numInstances: 1
-    buildCommand: npm install
+    buildCommand: npm ci
     startCommand: npm start
-    disk:
-      name: chang-material-data
-      mountPath: /var/data
-      sizeGB: 1
+    healthCheckPath: /
     envVars:
       - key: NODE_VERSION
         value: 24.21.0
       - key: NODE_ENV
         value: production
-      - key: CHANG_MATERIAL_DB_PATH
-        value: /var/data/chang_material_control.db
+      - key: DATABASE_URL
+        sync: false
       - key: CHANG_MATERIAL_INITIAL_ADMIN_PASSWORD
         sync: false

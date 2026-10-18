@@ -1,26 +1,33 @@
-import { initDbSchema, executeSql, queryAll, queryOne } from './db.js';
+import { executeSql, queryOne } from './db.js';
 import { runMigrations } from './migrations/runner.js';
 import { hashPassword } from '../utils/crypto.js';
 
-export function runSeed() {
+export async function runSeed() {
+  console.log('Initializing database schema...');
+  await runMigrations();
+
   const productionMode = process.env.NODE_ENV === 'production';
   const initialAdminPassword = process.env.CHANG_MATERIAL_INITIAL_ADMIN_PASSWORD;
-  if (productionMode && !initialAdminPassword) {
-    throw new Error('Set CHANG_MATERIAL_INITIAL_ADMIN_PASSWORD before seeding a production database.');
-  }
-
-  const existingTables = new Set(queryAll("SELECT name FROM sqlite_master WHERE type = 'table'").map(table => table.name));
   const businessTables = ['roles', 'restaurants', 'users', 'materials', 'checklists', 'checklist_items'];
-  const hasBusinessRows = businessTables.some(table => existingTables.has(table)
-    && queryOne(`SELECT EXISTS(SELECT 1 FROM ${table}) as has_rows`).has_rows);
+  let hasBusinessRows = false;
+  for (const table of businessTables) {
+    const result = await queryOne(`SELECT EXISTS(SELECT 1 FROM ${table}) AS has_rows`);
+    if (result?.has_rows) {
+      hasBusinessRows = true;
+      break;
+    }
+  }
   if (hasBusinessRows) {
     console.warn('Bootstrap skipped: existing business data detected. Use Admin UI for business changes.');
     return false;
   }
 
-  console.log('Initializing database schema...');
-  initDbSchema();
-  runMigrations();
+  if (productionMode && !initialAdminPassword) {
+    throw new Error('Set CHANG_MATERIAL_INITIAL_ADMIN_PASSWORD before seeding a production database.');
+  }
+  if (productionMode && initialAdminPassword.length < 12) {
+    throw new Error('CHANG_MATERIAL_INITIAL_ADMIN_PASSWORD must contain at least 12 characters.');
+  }
 
   console.log('Seeding Roles...');
   const roles = [
@@ -30,9 +37,9 @@ export function runSeed() {
   ];
 
   for (const r of roles) {
-    const existing = queryOne('SELECT id FROM roles WHERE code = ?', [r.code]);
+    const existing = await queryOne('SELECT id FROM roles WHERE code = ?', [r.code]);
     if (!existing) {
-      executeSql(
+      await executeSql(
         'INSERT INTO roles (id, code, name, description) VALUES (?, ?, ?, ?)',
         [r.id, r.code, r.name, r.description]
       );
@@ -60,10 +67,10 @@ export function runSeed() {
 
   const restaurantMap = {};
 
-  restaurantsData.forEach((item, index) => {
+  for (const [index, item] of restaurantsData.entries()) {
     // Check by name or code
-    const existingByName = queryOne('SELECT id FROM restaurants WHERE restaurant_name = ?', [item.name]);
-    const existingByCode = queryOne('SELECT id FROM restaurants WHERE restaurant_code = ?', [item.code]);
+    const existingByName = await queryOne('SELECT id FROM restaurants WHERE restaurant_name = ?', [item.name]);
+    const existingByCode = await queryOne('SELECT id FROM restaurants WHERE restaurant_code = ?', [item.code]);
     
     let id;
     if (existingByName) {
@@ -72,18 +79,18 @@ export function runSeed() {
       id = existingByCode.id;
     } else {
       id = `rest-${(index + 1).toString().padStart(2, '0')}`;
-      executeSql(
+      await executeSql(
         `INSERT INTO restaurants (id, restaurant_code, restaurant_name, status) VALUES (?, ?, ?, 'ACTIVE')`,
         [id, item.code, item.name]
       );
     }
     restaurantMap[index + 1] = id;
-  });
+  }
 
   console.log('Seeding Demo Users with Hashed Passwords...');
-  const adminRoleId = queryOne("SELECT id FROM roles WHERE code = 'ADMIN'").id;
-  const acLdRoleId = queryOne("SELECT id FROM roles WHERE code = 'AC_LD'").id;
-  const restRoleId = queryOne("SELECT id FROM roles WHERE code = 'RESTAURANT'").id;
+  const adminRoleId = (await queryOne("SELECT id FROM roles WHERE code = 'ADMIN'")).id;
+  const acLdRoleId = (await queryOne("SELECT id FROM roles WHERE code = 'AC_LD'")).id;
+  const restRoleId = (await queryOne("SELECT id FROM roles WHERE code = 'RESTAURANT'")).id;
 
   const usersToSeed = [
     {
@@ -134,10 +141,10 @@ export function runSeed() {
   }
 
   for (const u of usersToSeed) {
-    const existing = queryOne('SELECT id FROM users WHERE username = ?', [u.username]);
+    const existing = await queryOne('SELECT id FROM users WHERE username = ?', [u.username]);
     if (!existing) {
       const hash = hashPassword(u.password);
-      executeSql(
+      await executeSql(
         `INSERT INTO users (id, username, password_hash, full_name, role_id, restaurant_id, email, is_active)
          VALUES (?, ?, ?, ?, ?, ?, ?, 1)`,
         [u.id, u.username, hash, u.full_name, u.role_id, u.restaurant_id, u.email]
@@ -146,14 +153,15 @@ export function runSeed() {
   }
 
   for (const u of usersToSeed.filter(user => user.role_id === acLdRoleId)) {
-    const hasAssignments = queryOne(
+    const assignmentCount = await queryOne(
       'SELECT COUNT(*) as count FROM user_restaurant_assignments WHERE user_id = ?',
       [u.id]
-    ).count;
+    );
+    const hasAssignments = Number(assignmentCount?.count || 0);
     if (!hasAssignments) {
       for (const restaurantId of Object.values(restaurantMap)) {
-        executeSql(
-          'INSERT OR IGNORE INTO user_restaurant_assignments (user_id, restaurant_id) VALUES (?, ?)',
+        await executeSql(
+          'INSERT INTO user_restaurant_assignments (user_id, restaurant_id) VALUES (?, ?) ON CONFLICT (user_id, restaurant_id) DO NOTHING',
           [u.id, restaurantId]
         );
       }
@@ -175,9 +183,9 @@ export function runSeed() {
   ];
 
   for (const m of sampleMaterials) {
-    const existing = queryOne('SELECT id FROM materials WHERE material_code = ?', [m.code]);
+    const existing = await queryOne('SELECT id FROM materials WHERE material_code = ?', [m.code]);
     if (!existing) {
-      executeSql(
+      await executeSql(
         `INSERT INTO materials (id, material_code, material_name, department, category, unit, is_mandatory, photo_required, min_temp, max_temp)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [m.id, m.code, m.name, m.department, m.category, m.unit, m.mandatory, m.photo, m.min_temp, m.max_temp]
@@ -186,9 +194,9 @@ export function runSeed() {
   }
 
   // Seed Checklist and Checklist Items
-  const checklistExist = queryOne("SELECT id FROM checklists WHERE checklist_code = 'CHK-MORN-01'");
+  const checklistExist = await queryOne("SELECT id FROM checklists WHERE checklist_code = 'CHK-MORN-01'");
   if (!checklistExist) {
-    executeSql(
+    await executeSql(
       `INSERT INTO checklists (id, checklist_code, title, shift_type, version) VALUES ('chk-morn-01', 'CHK-MORN-01', 'Kiểm Tra Nguyên Vật Liệu Đầu Ca (FOH & BOH)', 'MORNING', 1)`
     );
   }
@@ -204,9 +212,9 @@ export function runSeed() {
   ];
 
   for (const item of chkItems) {
-    const existing = queryOne('SELECT id FROM checklist_items WHERE id = ?', [item.id]);
+    const existing = await queryOne('SELECT id FROM checklist_items WHERE id = ?', [item.id]);
     if (!existing) {
-      executeSql(
+      await executeSql(
         `INSERT INTO checklist_items (id, checklist_id, material_id, display_order, requirement_text, target_temp) VALUES (?, 'chk-morn-01', ?, ?, ?, ?)`,
         [item.id, item.material_id, item.display_order, item.req, item.target]
       );
@@ -218,5 +226,5 @@ export function runSeed() {
 }
 
 if (process.argv[1] && process.argv[1].endsWith('seed.js')) {
-  runSeed();
+  await runSeed();
 }

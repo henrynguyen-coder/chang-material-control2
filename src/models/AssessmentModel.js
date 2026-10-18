@@ -1,11 +1,11 @@
-import { db, queryAll, queryOne, executeSql } from '../database/db.js';
+import { queryAll, queryOne, executeSql, withTransaction } from '../database/db.js';
 import { NotificationModel } from './NotificationModel.js';
 import { AuditLogModel } from './AuditLogModel.js';
 import { UserModel } from './UserModel.js';
 import crypto from 'node:crypto';
 
 export class AssessmentModel {
-  static getAll({ user, restaurant_id, shift_type, shift_date, from_date, to_date, limit = 500 } = {}) {
+  static async getAll({ user, restaurant_id, shift_type, shift_date, from_date, to_date, limit = 500 } = {}) {
     let sql = `
       SELECT ma.*, r.restaurant_code, r.restaurant_name, u.full_name as inspector_name, c.title as checklist_title,
              (SELECT COUNT(*) FROM assessment_details ad WHERE ad.assessment_id = ma.id) as total_count,
@@ -28,7 +28,7 @@ export class AssessmentModel {
       sql += ' AND ma.restaurant_id = ?';
       params.push(user.restaurant_id);
     } else if (user.role_code === 'AC_LD') {
-      const assignedIds = user.assigned_restaurant_ids || UserModel.getAssignedRestaurantIds(user.id);
+      const assignedIds = user.assigned_restaurant_ids || await UserModel.getAssignedRestaurantIds(user.id);
       if (restaurant_id) {
         sql += assignedIds.includes(restaurant_id) ? ' AND ma.restaurant_id = ?' : ' AND 1 = 0';
         if (assignedIds.includes(restaurant_id)) params.push(restaurant_id);
@@ -69,7 +69,7 @@ export class AssessmentModel {
     return queryAll(sql, params);
   }
 
-  static getMaterialIssues({ user, restaurant_id, shift_type, shift_date, from_date, to_date, assessment_id } = {}) {
+  static async getMaterialIssues({ user, restaurant_id, shift_type, shift_date, from_date, to_date, assessment_id } = {}) {
     let sql = `
       SELECT ad.id as issue_id, ma.id as assessment_id, ma.restaurant_id,
              ma.shift_date, ma.shift_type, ma.submitted_at, ma.score,
@@ -92,7 +92,7 @@ export class AssessmentModel {
       sql += ' AND ma.restaurant_id = ?';
       params.push(user.restaurant_id);
     } else if (user.role_code === 'AC_LD') {
-      const assignedIds = user.assigned_restaurant_ids || UserModel.getAssignedRestaurantIds(user.id);
+      const assignedIds = user.assigned_restaurant_ids || await UserModel.getAssignedRestaurantIds(user.id);
       if (restaurant_id) {
         sql += assignedIds.includes(restaurant_id) ? ' AND ma.restaurant_id = ?' : ' AND 1 = 0';
         if (assignedIds.includes(restaurant_id)) params.push(restaurant_id);
@@ -136,8 +136,8 @@ export class AssessmentModel {
     return queryAll(sql, params);
   }
 
-  static getById(id, user) {
-    const assessment = queryOne(
+  static async getById(id, user) {
+    const assessment = await queryOne(
       `SELECT ma.*, r.restaurant_code, r.restaurant_name, u.full_name as inspector_name, c.title as checklist_title
        FROM material_assessments ma
        JOIN restaurants r ON ma.restaurant_id = r.id
@@ -156,7 +156,7 @@ export class AssessmentModel {
       throw error;
     }
     if (user.role_code === 'AC_LD') {
-      const assignedIds = user.assigned_restaurant_ids || UserModel.getAssignedRestaurantIds(user.id);
+      const assignedIds = user.assigned_restaurant_ids || await UserModel.getAssignedRestaurantIds(user.id);
       if (!assignedIds.includes(assessment.restaurant_id)) {
         const error = new Error('Truy cập bị từ chối: Nhà hàng chưa được gán cho tài khoản AC/L&D');
         error.statusCode = 403;
@@ -164,7 +164,7 @@ export class AssessmentModel {
       }
     }
 
-    const details = queryAll(
+    const details = await queryAll(
             `SELECT ad.*, ci.requirement_text, ci.target_temp,
               COALESCE(ad.material_code_snapshot, m.material_code) as material_code,
               COALESCE(ad.material_name_snapshot, m.material_name) as material_name,
@@ -180,7 +180,7 @@ export class AssessmentModel {
     return assessment;
   }
 
-  static create({ user, restaurant_id, checklist_id, shift_type, shift_date, notes, items = [] }) {
+  static async create({ user, restaurant_id, checklist_id, shift_type, shift_date, notes, items = [] }) {
     // 1. Enforce Restaurant ID Security
     let targetRestaurantId = restaurant_id;
     if (user.role_code === 'RESTAURANT') {
@@ -192,7 +192,7 @@ export class AssessmentModel {
     }
 
     // 2. Fetch all required checklist items with material definitions
-    const checklistItems = queryAll(
+    const checklistItems = await queryAll(
       `SELECT ci.*, m.id as mat_id, m.material_code, m.material_name, m.department, m.is_mandatory, m.photo_required
        FROM checklist_items ci
        JOIN materials m ON ci.material_id = m.id
@@ -285,64 +285,107 @@ export class AssessmentModel {
     const now = new Date().toISOString();
     const todayStr = shift_date || now.split('T')[0];
 
-    db.exec('BEGIN');
-    try {
-      executeSql(
-        `INSERT INTO material_assessments (id, restaurant_id, checklist_id, inspector_id, shift_date, shift_type, status, overall_allowed_to_serve, score, notes, submitted_at, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, 'SUBMITTED', ?, ?, ?, ?, ?)`,
-        [id, targetRestaurantId, checklist_id || 'chk-morn-01', user.id, todayStr, shift_type || 'MORNING', overallAllowedToServe, finalScore, notes || '', now, now]
-      );
+    await withTransaction(async (tx) => {
+  await tx.executeSql(
+    `INSERT INTO material_assessments (
+      id, restaurant_id, checklist_id, inspector_id,
+      shift_date, shift_type, status,
+      overall_allowed_to_serve, score, notes,
+      submitted_at, created_at
+    )
+    VALUES (?, ?, ?, ?, ?, ?, 'SUBMITTED', ?, ?, ?, ?, ?)`,
+    [
+      id,
+      targetRestaurantId,
+      checklist_id || 'chk-morn-01',
+      user.id,
+      todayStr,
+      shift_type || 'MORNING',
+      overallAllowedToServe,
+      finalScore,
+      notes || '',
+      now,
+      now
+    ]
+  );
 
-      for (const det of processedDetails) {
-        const detailId = `det-${crypto.randomBytes(6).toString('hex')}`;
-        executeSql(
-          `INSERT INTO assessment_details (id, assessment_id, checklist_item_id, material_id, department, color_result, smell_result, taste_result, quality_result, overall_result, allowed_to_serve, remark, photo_url, material_name_snapshot, material_code_snapshot)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-          [detailId, id, det.checklist_item_id, det.material_id, det.department, det.color_result, det.smell_result, det.taste_result, det.quality_result, det.overall_result, det.allowed_to_serve, det.remark, det.photo_url, det.material_name_snapshot, det.material_code_snapshot]
-        );
-      }
+  for (const det of processedDetails) {
+    const detailId = `det-${crypto.randomBytes(6).toString('hex')}`;
 
-      const assessment = this.getById(id, user);
-      NotificationModel.createForAssessment(assessment);
-      AuditLogModel.log({
+    await tx.executeSql(
+      `INSERT INTO assessment_details (
+        id, assessment_id, checklist_item_id, material_id,
+        department, color_result, smell_result,
+        taste_result, quality_result, overall_result,
+        allowed_to_serve, remark, photo_url,
+        material_name_snapshot, material_code_snapshot
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        detailId,
+        id,
+        det.checklist_item_id,
+        det.material_id,
+        det.department,
+        det.color_result,
+        det.smell_result,
+        det.taste_result,
+        det.quality_result,
+        det.overall_result,
+        det.allowed_to_serve,
+        det.remark,
+        det.photo_url,
+        det.material_name_snapshot,
+        det.material_code_snapshot
+      ]
+    );
+  }
+
+    });
+
+    const assessment = await this.getById(id, user);
+    await NotificationModel.createForAssessment(assessment);
+
+    await AuditLogModel.log({
+    user_id: user.id,
+    restaurant_id: assessment.restaurant_id,
+    action: 'CHECKLIST SUBMIT',
+    entity_type: 'MATERIAL_ASSESSMENT',
+    entity_id: assessment.id,
+    new_values: {
+      shift_date: assessment.shift_date,
+      shift_type: assessment.shift_type,
+      total_count: assessment.details.length,
+      pass_count: assessment.details.filter(
+        item => item.overall_result === 'PASS'
+      ).length,
+      fail_count: assessment.details.filter(
+        item => item.overall_result === 'FAIL'
+      ).length,
+      score: assessment.score,
+      status: assessment.status
+    }
+  });
+
+    for (const item of assessment.details.filter(detail => detail.overall_result === 'FAIL')) {
+      await AuditLogModel.log({
         user_id: user.id,
         restaurant_id: assessment.restaurant_id,
-        action: 'CHECKLIST SUBMIT',
-        entity_type: 'MATERIAL_ASSESSMENT',
-        entity_id: assessment.id,
+        action: 'MATERIAL FAIL',
+        entity_type: 'MATERIAL',
+        entity_id: item.material_id,
         new_values: {
-          shift_date: assessment.shift_date,
-          shift_type: assessment.shift_type,
-          total_count: assessment.details.length,
-          pass_count: assessment.details.filter(item => item.overall_result === 'PASS').length,
-          fail_count: assessment.details.filter(item => item.overall_result === 'FAIL').length,
-          score: assessment.score,
-          status: assessment.status
+          assessment_id: assessment.id,
+          material_code: item.material_code,
+          material_name: item.material_name,
+          department: item.department,
+          result: item.overall_result,
+          allowed_to_serve: item.allowed_to_serve,
+          remark: item.remark
         }
       });
-      assessment.details.filter(item => item.overall_result === 'FAIL').forEach(item => {
-        AuditLogModel.log({
-          user_id: user.id,
-          restaurant_id: assessment.restaurant_id,
-          action: 'MATERIAL FAIL',
-          entity_type: 'MATERIAL',
-          entity_id: item.material_id,
-          new_values: {
-            assessment_id: assessment.id,
-            material_code: item.material_code,
-            material_name: item.material_name,
-            department: item.department,
-            result: item.overall_result,
-            allowed_to_serve: item.allowed_to_serve,
-            remark: item.remark
-          }
-        });
-      });
-      db.exec('COMMIT');
-      return assessment;
-    } catch (error) {
-      db.exec('ROLLBACK');
-      throw error;
     }
+
+    return assessment;
   }
 }

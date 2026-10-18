@@ -4,7 +4,7 @@ import { generateToken, hashPassword } from '../utils/crypto.js';
 import { sessionStore, authenticateToken } from '../middleware/authMiddleware.js';
 
 export class AuthController {
-  static login(req, body, res) {
+  static async login(req, body, res) {
     const { username, password } = body || {};
     if (!username || !password) {
       res.writeHead(400, { 'Content-Type': 'application/json' });
@@ -12,7 +12,7 @@ export class AuthController {
       return;
     }
 
-    const user = UserModel.authenticate(username, password);
+    const user = await UserModel.authenticate(username, password);
     if (!user) {
       res.writeHead(401, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ error: 'Tên đăng nhập hoặc mật khẩu không chính xác' }));
@@ -28,7 +28,7 @@ export class AuthController {
     const token = generateToken();
     sessionStore.set(token, user.id);
 
-    AuditLogModel.log({
+    await AuditLogModel.log({
       user_id: user.id,
       restaurant_id: user.restaurant_id,
       action: 'LOGIN',
@@ -45,7 +45,7 @@ export class AuthController {
     }));
   }
 
-  static logout(req, res) {
+  static async logout(req, res) {
     const authHeader = req.headers['authorization'] || '';
     const token = authHeader.startsWith('Bearer ') ? authHeader.substring(7) : null;
 
@@ -53,9 +53,9 @@ export class AuthController {
       const userId = sessionStore.get(token);
       sessionStore.delete(token);
 
-      AuditLogModel.log({
+      await AuditLogModel.log({
         user_id: userId,
-        restaurant_id: UserModel.getById(userId)?.restaurant_id,
+        restaurant_id: (await UserModel.getById(userId))?.restaurant_id,
         action: 'LOGOUT',
         entity_type: 'USER',
         entity_id: userId
@@ -66,8 +66,8 @@ export class AuthController {
     res.end(JSON.stringify({ message: 'Đã đăng xuất thành công' }));
   }
 
-  static me(req, res) {
-    const user = authenticateToken(req);
+  static async me(req, res) {
+    const user = await authenticateToken(req);
     if (!user) {
       res.writeHead(401, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ error: 'Chưa đăng nhập' }));

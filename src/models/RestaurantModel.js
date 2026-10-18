@@ -2,7 +2,7 @@ import { queryAll, queryOne, executeSql } from '../database/db.js';
 import crypto from 'node:crypto';
 
 export class RestaurantModel {
-  static getAll({ status, search } = {}) {
+  static async getAll({ status, search } = {}) {
     let sql = 'SELECT * FROM restaurants WHERE 1=1';
     const params = [];
 
@@ -20,15 +20,15 @@ export class RestaurantModel {
     return queryAll(sql, params);
   }
 
-  static getById(id) {
+  static async getById(id) {
     return queryOne('SELECT * FROM restaurants WHERE id = ?', [id]);
   }
 
-  static getByCode(code) {
+  static async getByCode(code) {
     return queryOne('SELECT * FROM restaurants WHERE UPPER(restaurant_code) = UPPER(?)', [code]);
   }
 
-  static create({ restaurant_code, restaurant_name, status = 'ACTIVE' }) {
+  static async create({ restaurant_code, restaurant_name, status = 'ACTIVE' }) {
     if (!restaurant_code || !restaurant_code.trim()) {
       throw new Error('Mã nhà hàng (restaurant_code) là bắt buộc');
     }
@@ -37,7 +37,7 @@ export class RestaurantModel {
     }
 
     const trimmedCode = restaurant_code.trim().toUpperCase();
-    const existing = this.getByCode(trimmedCode);
+    const existing = await this.getByCode(trimmedCode);
     if (existing) {
       throw new Error(`Mã nhà hàng "${trimmedCode}" đã tồn tại trên hệ thống`);
     }
@@ -45,7 +45,7 @@ export class RestaurantModel {
     const id = `rest-${crypto.randomBytes(6).toString('hex')}`;
     const now = new Date().toISOString();
 
-    executeSql(
+    await executeSql(
       `INSERT INTO restaurants (id, restaurant_code, restaurant_name, status, created_at, updated_at)
        VALUES (?, ?, ?, ?, ?, ?)`,
       [id, trimmedCode, restaurant_name.trim(), status, now, now]
@@ -54,8 +54,8 @@ export class RestaurantModel {
     return this.getById(id);
   }
 
-  static update(id, { restaurant_code, restaurant_name, status }) {
-    const restaurant = this.getById(id);
+  static async update(id, { restaurant_code, restaurant_name, status }) {
+    const restaurant = await this.getById(id);
     if (!restaurant) {
       throw new Error('Nhà hàng không tồn tại');
     }
@@ -64,7 +64,7 @@ export class RestaurantModel {
     if (restaurant_code && restaurant_code.trim()) {
       trimmedCode = restaurant_code.trim().toUpperCase();
       if (trimmedCode !== restaurant.restaurant_code) {
-        const existing = this.getByCode(trimmedCode);
+        const existing = await this.getByCode(trimmedCode);
         if (existing && existing.id !== id) {
           throw new Error(`Mã nhà hàng "${trimmedCode}" đã tồn tại trên hệ thống`);
         }
@@ -75,7 +75,7 @@ export class RestaurantModel {
     const updatedStatus = status || restaurant.status;
     const now = new Date().toISOString();
 
-    executeSql(
+    await executeSql(
       `UPDATE restaurants 
        SET restaurant_code = ?, restaurant_name = ?, status = ?, updated_at = ?
        WHERE id = ?`,
@@ -85,15 +85,15 @@ export class RestaurantModel {
     return this.getById(id);
   }
 
-  static toggleStatus(id, newStatus) {
-    const restaurant = this.getById(id);
+  static async toggleStatus(id, newStatus) {
+    const restaurant = await this.getById(id);
     if (!restaurant) {
       throw new Error('Nhà hàng không tồn tại');
     }
     const statusToSet = newStatus || (restaurant.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE');
     const now = new Date().toISOString();
 
-    executeSql(
+    await executeSql(
       `UPDATE restaurants SET status = ?, updated_at = ? WHERE id = ?`,
       [statusToSet, now, id]
     );

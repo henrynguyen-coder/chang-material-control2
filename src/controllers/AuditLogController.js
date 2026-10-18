@@ -2,8 +2,8 @@ import { AuditLogModel } from '../models/AuditLogModel.js';
 import { requireAuth, requireRole } from '../middleware/authMiddleware.js';
 
 export class AuditLogController {
-  static recordChecklistEvent(req, body, res) {
-    const user = requireAuth(req, res);
+  static async recordChecklistEvent(req, body, res) {
+    const user = await requireAuth(req, res);
     if (!user || !requireRole('RESTAURANT')(user, res)) return;
 
     const { action, shift_type, shift_date, item_count } = body || {};
@@ -13,7 +13,7 @@ export class AuditLogController {
       return;
     }
 
-    AuditLogModel.log({
+    await AuditLogModel.log({
       user_id: user.id,
       restaurant_id: user.restaurant_id,
       action,

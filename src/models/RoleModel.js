@@ -1,7 +1,7 @@
 import { queryAll } from '../database/db.js';
 
 export class RoleModel {
-  static getAll() {
+  static async getAll() {
     return queryAll('SELECT * FROM roles ORDER BY code ASC');
   }
 }

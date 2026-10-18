@@ -3,25 +3,25 @@ import { AuditLogModel } from '../models/AuditLogModel.js';
 import { SettingsModel } from '../models/SettingsModel.js';
 
 export class SettingsController {
-  static getAll(req, res) {
-    const user = requireAuth(req, res);
+  static async getAll(req, res) {
+    const user = await requireAuth(req, res);
     if (!user || !requireRole(['ADMIN', 'AC_LD'])(user, res)) return;
     res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ settings: SettingsModel.getAll() }));
+    res.end(JSON.stringify({ settings: await SettingsModel.getAll() }));
   }
 
-  static update(req, body, res) {
-    const user = requireAuth(req, res);
+  static async update(req, body, res) {
+    const user = await requireAuth(req, res);
     if (!user || !requireRole('ADMIN')(user, res)) return;
     try {
-      const oldValues = SettingsModel.getMap();
-      const settings = SettingsModel.update(body, user.id);
-      AuditLogModel.log({
+      const oldValues = await SettingsModel.getMap();
+      const settings = await SettingsModel.update(body, user.id);
+      await AuditLogModel.log({
         user_id: user.id,
         action: 'ADMIN UPDATE',
         entity_type: 'SYSTEM_SETTINGS',
         old_values: oldValues,
-        new_values: SettingsModel.getMap()
+        new_values: await SettingsModel.getMap()
       });
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ message: 'Đã lưu cấu hình hệ thống', settings }));
