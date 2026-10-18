@@ -16,7 +16,7 @@ class App {
         const data = await Api.get('/api/auth/me');
         Store.setUser(data.user, Store.token);
       } catch (err) {
-        console.warn('Session expired, clearing store');
+        console.warn('Unable to restore saved session, clearing local store');
         Store.clearUser();
       }
     }
@@ -37,6 +37,7 @@ class App {
 
     navbar.innerHTML = `
       <div class="brand-title">
+        <img class="brand-logo" src="/chang-logo.png" alt="CHANG logo">
         <span>CHANG</span>
         <span class="brand-badge">MATERIAL CONTROL</span>
       </div>

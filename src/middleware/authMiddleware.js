@@ -1,20 +1,16 @@
 import { UserModel } from '../models/UserModel.js';
-
-// In-memory token store: token -> userId
-export const sessionStore = new Map();
+import { SessionModel } from '../models/SessionModel.js';
 
 export async function authenticateToken(req) {
   const authHeader = req.headers['authorization'] || '';
   const token = authHeader.startsWith('Bearer ') ? authHeader.substring(7) : null;
 
-  if (!token || !sessionStore.has(token)) {
-    return null;
-  }
-
-  const userId = sessionStore.get(token);
+  if (!token) return null;
+  const userId = await SessionModel.getUserId(token);
+  if (!userId) return null;
   const user = await UserModel.getById(userId);
   if (!user?.is_active) {
-    sessionStore.delete(token);
+    await SessionModel.delete(token);
     return null;
   }
   return user;

@@ -1,7 +1,8 @@
 import { UserModel } from '../models/UserModel.js';
 import { AuditLogModel } from '../models/AuditLogModel.js';
-import { generateToken, hashPassword } from '../utils/crypto.js';
-import { sessionStore, authenticateToken } from '../middleware/authMiddleware.js';
+import { generateToken } from '../utils/crypto.js';
+import { authenticateToken } from '../middleware/authMiddleware.js';
+import { SessionModel } from '../models/SessionModel.js';
 
 export class AuthController {
   static async login(req, body, res) {
@@ -26,7 +27,7 @@ export class AuthController {
     }
 
     const token = generateToken();
-    sessionStore.set(token, user.id);
+    await SessionModel.create(token, user.id);
 
     await AuditLogModel.log({
       user_id: user.id,
@@ -49,9 +50,9 @@ export class AuthController {
     const authHeader = req.headers['authorization'] || '';
     const token = authHeader.startsWith('Bearer ') ? authHeader.substring(7) : null;
 
-    if (token && sessionStore.has(token)) {
-      const userId = sessionStore.get(token);
-      sessionStore.delete(token);
+    const userId = await SessionModel.getUserId(token);
+    if (userId) {
+      await SessionModel.delete(token);
 
       await AuditLogModel.log({
         user_id: userId,

@@ -38,6 +38,12 @@ CREATE TABLE IF NOT EXISTS user_restaurant_assignments (
   PRIMARY KEY (user_id, restaurant_id)
 );
 
+CREATE TABLE IF NOT EXISTS user_sessions (
+  token_hash TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE IF NOT EXISTS system_settings (
   setting_key TEXT PRIMARY KEY,
   setting_value TEXT NOT NULL,
@@ -164,4 +170,5 @@ CREATE INDEX IF NOT EXISTS idx_assessments_restaurant_date ON material_assessmen
 CREATE INDEX IF NOT EXISTS idx_assessments_inspector ON material_assessments(inspector_id, submitted_at);
 CREATE INDEX IF NOT EXISTS idx_assessment_details_assessment ON assessment_details(assessment_id);
 CREATE INDEX IF NOT EXISTS idx_notifications_user_date ON notifications(user_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_user_sessions_user ON user_sessions(user_id);
 CREATE INDEX IF NOT EXISTS idx_audit_logs_restaurant_date ON audit_logs(restaurant_id, created_at);

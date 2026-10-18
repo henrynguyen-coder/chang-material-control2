@@ -23,6 +23,15 @@
   color: var(--color-warm-white);
 }
 
+.brand-logo {
+  width: 58px;
+  height: 42px;
+  object-fit: contain;
+  padding: 3px;
+  background: #fff;
+  border-radius: 6px;
+}
+
 .brand-badge {
   background: var(--color-gold-primary);
   color: var(--color-burgundy-dark);

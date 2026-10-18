@@ -7,7 +7,7 @@ export class LoginView {
       <div class="login-wrapper">
         <div class="login-card">
           <div class="login-header">
-            <span class="login-logo-badge">CHANG F&B</span>
+            <img class="login-logo-image" src="/chang-logo.png" alt="CHANG Modern Thai Cuisine">
             <h2>CHANG MATERIAL CONTROL</h2>
             <p class="subtext">Hệ Thống Kiểm Soát Nguyên Vật Liệu Đầu Ca</p>
           </div>

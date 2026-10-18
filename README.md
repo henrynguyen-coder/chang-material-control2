@@ -2,6 +2,8 @@
 
 Web app for shared material checks, restaurant assignments, reports, and notifications.
 
+The CHANG logo is bundled as a local image asset. Login sessions are stored in PostgreSQL and do not expire automatically; they end when the user logs out or an administrator disables the account. Clearing browser data removes the saved login from that device.
+
 ## Free hosted deployment
 
 The app can run as a Render free web service with a Neon PostgreSQL database. The database is external to the web service so application data survives Render restarts and sleep periods. Free services can sleep while idle and take longer to respond on the first request after waking.

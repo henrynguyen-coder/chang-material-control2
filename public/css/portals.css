@@ -22,16 +22,12 @@
   margin-bottom: 24px;
 }
 
-.login-logo-badge {
-  display: inline-block;
-  background: var(--color-burgundy-primary);
-  color: var(--color-gold-primary);
-  font-weight: 800;
-  padding: 6px 14px;
-  border-radius: var(--border-radius-sm);
-  font-size: 0.9rem;
-  letter-spacing: 0.1em;
-  margin-bottom: 8px;
+.login-logo-image {
+  display: block;
+  width: min(210px, 70%);
+  height: 105px;
+  object-fit: contain;
+  margin: 0 auto 8px;
 }
 
 .preset-login-box {

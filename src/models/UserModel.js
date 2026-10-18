@@ -164,6 +164,9 @@ export class UserModel {
         [updatedName, role.id, restaurantId, updatedActive, email === undefined ? current.email : email, phone === undefined ? current.phone : phone,
           password ? hashPassword(password) : null, now, id]
       );
+      if (password || !updatedActive) {
+        await tx.executeSql('DELETE FROM user_sessions WHERE user_id = ?', [id]);
+      }
       await this.saveAssignments(id, assignedIds, tx);
     });
     return this.getById(id);
