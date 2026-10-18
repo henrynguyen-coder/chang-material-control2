@@ -23,6 +23,11 @@ export async function requireAuth(req, res) {
     res.end(JSON.stringify({ error: 'Chưa đăng nhập hoặc phiên làm việc đã hết hạn' }));
     return null;
   }
+  if (user.must_change_password) {
+    res.writeHead(403, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Bạn cần đổi mật khẩu khởi tạo trước khi sử dụng ứng dụng', code: 'PASSWORD_CHANGE_REQUIRED' }));
+    return null;
+  }
   return user;
 }
 

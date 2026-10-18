@@ -1,6 +1,7 @@
 import { executeSql, queryAll, queryOne } from './db.js';
 import { runMigrations } from './migrations/runner.js';
 import { hashPassword } from '../utils/crypto.js';
+import crypto from 'node:crypto';
 
 async function ensureRestaurantUsers() {
   const restaurantRole = await queryOne("SELECT id FROM roles WHERE code = 'RESTAURANT'");
@@ -23,24 +24,27 @@ async function ensureRestaurantUsers() {
     if (!abbreviation) continue;
 
     const username = `CHANG${abbreviation}`;
-    const password = `Chang${abbreviation}123@`;
     const existing = await queryOne('SELECT id FROM users WHERE username = ?', [username]);
     if (existing) continue;
+    const temporaryPassword = `${crypto.randomBytes(18).toString('base64url')}Aa9!`;
 
     const result = await executeSql(
-      `INSERT INTO users (id, username, password_hash, full_name, role_id, restaurant_id, is_active)
-       VALUES (?, ?, ?, ?, ?, ?, 1)
+      `INSERT INTO users (id, username, password_hash, full_name, role_id, restaurant_id, is_active, must_change_password)
+       VALUES (?, ?, ?, ?, ?, ?, 1, 1)
        ON CONFLICT (username) DO NOTHING`,
       [
-        `usr-${username.toLowerCase()}`,
+        `usr-${crypto.randomBytes(6).toString('hex')}`,
         username,
-        hashPassword(password),
+        hashPassword(temporaryPassword),
         `Quản lý ${restaurant.restaurant_name}`,
         restaurantRole.id,
         restaurant.id
       ]
     );
     created += result.rowCount;
+    if (result.rowCount) {
+      console.info(`[ONE_TIME_RESTAURANT_CREDENTIAL] ${JSON.stringify({ username, password: temporaryPassword })}`);
+    }
   }
 
   return created;

@@ -77,4 +77,29 @@ export class AuthController {
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ user }));
   }
+
+  static async changePassword(req, body, res) {
+    const user = await authenticateToken(req);
+    if (!user) {
+      res.writeHead(401, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Vui lòng đăng nhập lại' }));
+      return;
+    }
+
+    const { password, confirmPassword } = body || {};
+    if (password !== confirmPassword) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Mật khẩu xác nhận không khớp' }));
+      return;
+    }
+
+    try {
+      const updatedUser = await UserModel.changePassword(user.id, password);
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ message: 'Đổi mật khẩu thành công', user: updatedUser }));
+    } catch (error) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: error.message }));
+    }
+  }
 }

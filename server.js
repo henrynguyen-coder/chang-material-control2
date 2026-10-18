@@ -75,6 +75,9 @@ const server = http.createServer(async (req, res) => {
     if (pathname === '/api/auth/me' && req.method === 'GET') {
       return AuthController.me(req, res);
     }
+    if (pathname === '/api/auth/change-password' && req.method === 'POST') {
+      return AuthController.changePassword(req, body, res);
+    }
     if (pathname === '/api/audit-events' && req.method === 'POST') {
       return AuditLogController.recordChecklistEvent(req, body, res);
     }

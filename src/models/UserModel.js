@@ -18,6 +18,7 @@ export class UserModel {
   static async getById(id) {
     const user = await queryOne(
       `SELECT u.id, u.username, u.full_name, u.email, u.phone, u.is_active, u.role_id, u.restaurant_id,
+              u.must_change_password,
               r.code AS role_code, r.name AS role_name, res.restaurant_name, res.restaurant_code
        FROM users u
        JOIN roles r ON u.role_id = r.id
@@ -169,6 +170,17 @@ export class UserModel {
       }
       await this.saveAssignments(id, assignedIds, tx);
     });
+    return this.getById(id);
+  }
+
+  static async changePassword(id, password) {
+    if (typeof password !== 'string' || password.length < 12) {
+      throw new Error('Mật khẩu mới phải có ít nhất 12 ký tự');
+    }
+    await executeSql(
+      'UPDATE users SET password_hash = ?, must_change_password = 0, updated_at = ? WHERE id = ?',
+      [hashPassword(password), new Date().toISOString(), id]
+    );
     return this.getById(id);
   }
 }

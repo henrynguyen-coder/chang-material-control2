@@ -75,6 +75,14 @@ class App {
       return;
     }
 
+    if (Store.user.must_change_password) {
+      LoginView.renderPasswordChange(container, Store.user, () => {
+        this.renderHeader();
+        this.renderCurrentView();
+      });
+      return;
+    }
+
     // Role-based portal router
     const role = Store.user.role_code;
 
