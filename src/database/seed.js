@@ -1,6 +1,50 @@
-import { executeSql, queryOne } from './db.js';
+import { executeSql, queryAll, queryOne } from './db.js';
 import { runMigrations } from './migrations/runner.js';
 import { hashPassword } from '../utils/crypto.js';
+
+async function ensureRestaurantUsers() {
+  const restaurantRole = await queryOne("SELECT id FROM roles WHERE code = 'RESTAURANT'");
+  if (!restaurantRole) {
+    console.warn('Restaurant accounts not created: RESTAURANT role is missing.');
+    return 0;
+  }
+
+  const restaurants = await queryAll(
+    'SELECT id, restaurant_code, restaurant_name FROM restaurants ORDER BY restaurant_code'
+  );
+  let created = 0;
+
+  for (const restaurant of restaurants) {
+    const abbreviation = restaurant.restaurant_code
+      .split('-')
+      .at(-1)
+      .replace(/[^a-z0-9]/gi, '')
+      .toUpperCase();
+    if (!abbreviation) continue;
+
+    const username = `CHANG${abbreviation}`;
+    const password = `Chang${abbreviation}123@`;
+    const existing = await queryOne('SELECT id FROM users WHERE username = ?', [username]);
+    if (existing) continue;
+
+    const result = await executeSql(
+      `INSERT INTO users (id, username, password_hash, full_name, role_id, restaurant_id, is_active)
+       VALUES (?, ?, ?, ?, ?, ?, 1)
+       ON CONFLICT (username) DO NOTHING`,
+      [
+        `usr-${username.toLowerCase()}`,
+        username,
+        hashPassword(password),
+        `Quản lý ${restaurant.restaurant_name}`,
+        restaurantRole.id,
+        restaurant.id
+      ]
+    );
+    created += result.rowCount;
+  }
+
+  return created;
+}
 
 export async function runSeed() {
   console.log('Initializing database schema...');
@@ -18,6 +62,8 @@ export async function runSeed() {
     }
   }
   if (hasBusinessRows) {
+    const createdRestaurantUsers = await ensureRestaurantUsers();
+    console.log(`Restaurant account bootstrap completed: ${createdRestaurantUsers} account(s) added.`);
     console.warn('Bootstrap skipped: existing business data detected. Use Admin UI for business changes.');
     return false;
   }
@@ -86,6 +132,9 @@ export async function runSeed() {
     }
     restaurantMap[index + 1] = id;
   }
+
+  const createdRestaurantUsers = await ensureRestaurantUsers();
+  console.log(`Restaurant account bootstrap completed: ${createdRestaurantUsers} account(s) added.`);
 
   console.log('Seeding Demo Users with Hashed Passwords...');
   const adminRoleId = (await queryOne("SELECT id FROM roles WHERE code = 'ADMIN'")).id;
