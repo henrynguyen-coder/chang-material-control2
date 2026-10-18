@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: chang-material-control
+    name: chang-material-control2-web
     runtime: node
     plan: free
     numInstances: 1
