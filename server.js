@@ -23,7 +23,9 @@ const MIME_TYPES = {
   '.css': 'text/css; charset=UTF-8',
   '.js': 'text/javascript; charset=UTF-8',
   '.json': 'application/json; charset=UTF-8',
+  '.webmanifest': 'application/manifest+json; charset=UTF-8',
   '.png': 'image/png',
+  '.svg': 'image/svg+xml',
   '.jpg': 'image/jpeg',
   '.svg': 'image/svg+xml',
   '.ico': 'image/x-icon'

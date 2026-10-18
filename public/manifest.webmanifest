@@ -1,0 +1,27 @@
+{
+  "id": "/",
+  "name": "CHANG Material Control",
+  "short_name": "CHANG Control",
+  "description": "Kiểm soát nguyên vật liệu đầu ca tại nhà hàng CHANG.",
+  "lang": "vi-VN",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f8f5ef",
+  "theme_color": "#641b25",
+  "icons": [
+    {
+      "src": "/icons/chang-control-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/chang-control-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

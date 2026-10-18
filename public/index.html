@@ -4,7 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>CHANG MATERIAL CONTROL - DAILY SHIFT MATERIAL CHECK</title>
+  <meta name="theme-color" content="#641b25">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="CHANG Control">
   <link rel="icon" type="image/png" href="/chang-logo.png">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
   <meta name="description" content="Hệ thống quản lý kiểm soát nguyên vật liệu đầu ca cho 15 nhà hàng Chang F&B Corporate Operations">
   
   <!-- CSS Design System Tokens & Components -->
@@ -23,5 +30,14 @@
 
   <!-- Application Bootstrap -->
   <script type="module" src="/js/app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js').catch(error => {
+          console.error('Unable to register app service worker:', error);
+        });
+      });
+    }
+  </script>
 </body>
 </html>

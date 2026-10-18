@@ -2,6 +2,8 @@
 
 Web app for shared material checks, restaurant assignments, reports, and notifications.
 
+Phone installation instructions for Android and iPhone: [INSTALL_APP.md](INSTALL_APP.md).
+
 The CHANG logo is bundled as a local image asset. Login sessions are stored in PostgreSQL and do not expire automatically; they end when the user logs out or an administrator disables the account. Clearing browser data removes the saved login from that device.
 
 ## Free hosted deployment
