@@ -415,6 +415,7 @@
 
 .ac-monitoring-section {
   min-width: 0;
+  width: 100%;
 }
 
 .ac-monitoring-section .section-title {
@@ -434,16 +435,19 @@
 
 .ac-monitoring-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
+  width: 100%;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  align-items: stretch;
+  gap: 16px;
 }
 
 .ac-monitor-card {
   display: flex;
   flex-direction: column;
   gap: 14px;
+  width: 100%;
   min-width: 0;
-  padding: 15px;
+  padding: 18px;
   background: var(--color-warm-white);
   border: 1px solid var(--color-border-subtle);
   border-left: 4px solid var(--color-status-completed);
@@ -489,7 +493,7 @@
 }
 
 .ac-restaurant-name {
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
   padding: 0;
   border: 0;
   background: transparent;
