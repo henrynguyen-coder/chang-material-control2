@@ -7,29 +7,34 @@ export class RestaurantController {
     const user = await requireAuth(req, res);
     if (!user) return;
 
-    // RESTAURANT role only gets their assigned restaurant or filtered list
-    if (user.role_code === 'RESTAURANT') {
-      const rest = await RestaurantModel.getById(user.restaurant_id);
+    try {
+      // RESTAURANT role only gets their assigned restaurant or filtered list
+      if (user.role_code === 'RESTAURANT') {
+        const rest = await RestaurantModel.getById(user.restaurant_id);
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ restaurants: rest ? [rest] : [] }));
+        return;
+      }
+
+      if (user.role_code === 'AC_LD') {
+        const assignedIds = user.assigned_restaurant_ids || [];
+        const restaurants = await RestaurantModel.getAll({ status: urlParams.get('status') || null });
+        const assignedRestaurants = restaurants.filter(restaurant => assignedIds.includes(restaurant.id));
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ restaurants: assignedRestaurants }));
+        return;
+      }
+
+      const status = urlParams.get('status') || null;
+      const search = urlParams.get('search') || null;
+      const restaurants = await RestaurantModel.getAll({ status, search });
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ restaurants: rest ? [rest] : [] }));
-      return;
+      res.end(JSON.stringify({ restaurants }));
+    } catch (error) {
+      console.error('Unable to load restaurants', error);
+      res.writeHead(error.statusCode || 500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: error.message || 'Không thể tải danh sách nhà hàng' }));
     }
-
-    if (user.role_code === 'AC_LD') {
-      const assignedIds = user.assigned_restaurant_ids || [];
-      const assignedRestaurants = await RestaurantModel.getAll({ status: urlParams.get('status') || null })
-        .filter(restaurant => assignedIds.includes(restaurant.id));
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ restaurants: assignedRestaurants }));
-      return;
-    }
-
-    const status = urlParams.get('status') || null;
-    const search = urlParams.get('search') || null;
-    const restaurants = await RestaurantModel.getAll({ status, search });
-
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ restaurants }));
   }
 
   static async getById(req, id, res) {
