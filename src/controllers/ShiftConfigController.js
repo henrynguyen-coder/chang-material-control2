@@ -5,7 +5,8 @@ import { requireAuth, requireRole } from '../middleware/authMiddleware.js';
 export class ShiftConfigController {
   static async getAll(req, res) {
     const user = await requireAuth(req, res);
-    if (!user || !requireRole('ADMIN')(user, res)) return;
+    // Shift times are read by restaurant and AC dashboards; only changes stay admin-only.
+    if (!user || !requireRole(['ADMIN', 'AC_LD', 'RESTAURANT'])(user, res)) return;
     const shifts = await ShiftConfigModel.getAll();
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ shifts }));
