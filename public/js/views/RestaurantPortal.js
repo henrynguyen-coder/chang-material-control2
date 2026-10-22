@@ -302,7 +302,7 @@ export class RestaurantPortal {
 
       items.forEach((it, idx) => {
         html += `
-          <div class="material-item-card" data-dept="${it.department}" data-item-id="${it.id}" data-mandatory="${it.is_mandatory}" data-photo="${it.photo_required}" style="background: var(--color-warm-white); border: 1px solid var(--color-border-subtle); border-radius: 12px; padding: 14px; box-shadow: var(--box-shadow-subtle);">
+          <div class="material-item-card" data-dept="${it.department}" data-item-id="${it.id}" data-mandatory="${it.is_mandatory}" style="background: var(--color-warm-white); border: 1px solid var(--color-border-subtle); border-radius: 12px; padding: 14px; box-shadow: var(--box-shadow-subtle);">
             
             <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 6px;">
               <div>
@@ -312,7 +312,6 @@ export class RestaurantPortal {
               </div>
               <div style="display: flex; gap: 4px; flex-wrap: wrap;">
                 ${it.is_mandatory ? '<span class="badge badge-overdue">🔴 Mandatory</span>' : '<span class="badge">Optional</span>'}
-                ${it.photo_required ? '<span class="badge badge-gold">📷 Photo Req</span>' : ''}
               </div>
             </div>
 
@@ -367,13 +366,6 @@ export class RestaurantPortal {
               <label style="font-size: 0.75rem; font-weight: 700; color: var(--color-charcoal-medium);">Remark / Ghi Chú:</label>
               <input type="text" class="form-input item-remark" data-item-id="${it.id}" placeholder="Ghi chú thêm...">
             </div>
-
-            ${it.photo_required ? `
-              <div style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--color-border-subtle);">
-                <label style="font-size: 0.75rem; font-weight: 700; color: var(--color-thai-red);">📷 Ảnh Chụp Bắt Buộc (Photo Required):</label>
-                <input type="text" class="form-input item-photo" data-item-id="${it.id}" placeholder="Đường dẫn ảnh hoặc đính kèm ảnh (vd: img_photo_01.jpg)" value="attached_photo_demo.jpg">
-              </div>
-            ` : ''}
 
           </div>
         `;
@@ -470,16 +462,11 @@ export class RestaurantPortal {
           const cTaste = card.querySelector('.crit-taste').value;
           const cQuality = card.querySelector('.crit-quality').value;
           const remark = card.querySelector(`.item-remark`)?.value.trim() || '';
-          const photoUrl = card.querySelector(`.item-photo`)?.value.trim() || '';
 
           const hasFail = (cColor === 'FAIL' || cSmell === 'FAIL' || cTaste === 'FAIL' || cQuality === 'FAIL');
 
           if (hasFail && !remark) {
             validationError = `Vật tư "${it.material_name}" bị FAIL. Bắt buộc nhập Remark nguyên nhân!`;
-          }
-
-          if (it.photo_required && !photoUrl) {
-            validationError = `Vật tư "${it.material_name}" yêu cầu hình ảnh đính kèm (Photo Required)!`;
           }
 
           detailItems.push({
@@ -488,8 +475,7 @@ export class RestaurantPortal {
             smell_result: cSmell,
             taste_result: cTaste,
             quality_result: cQuality,
-            remark,
-            photo_url: photoUrl
+            remark
           });
         });
 
@@ -541,8 +527,7 @@ export class RestaurantPortal {
         smell_result: card.querySelector('.crit-smell').value,
         taste_result: card.querySelector('.crit-taste').value,
         quality_result: card.querySelector('.crit-quality').value,
-        remark: card.querySelector('.item-remark')?.value || '',
-        photo_url: card.querySelector('.item-photo')?.value || ''
+        remark: card.querySelector('.item-remark')?.value || ''
       };
     }).filter(Boolean);
   }
@@ -561,8 +546,6 @@ export class RestaurantPortal {
           if (saved[`${criterion}_result`]) input.value = saved[`${criterion}_result`];
         });
         card.querySelector('.item-remark').value = saved.remark || '';
-        const photoInput = card.querySelector('.item-photo');
-        if (photoInput && saved.photo_url) photoInput.value = saved.photo_url;
         card.querySelector('.crit-color').dispatchEvent(new Event('change', { bubbles: true }));
       });
       document.querySelector('#assessment-notes').value = draft.notes || '';

@@ -168,7 +168,7 @@ export class AssessmentModel {
             `SELECT ad.*, ci.requirement_text, ci.target_temp,
               COALESCE(ad.material_code_snapshot, m.material_code) as material_code,
               COALESCE(ad.material_name_snapshot, m.material_name) as material_name,
-              ad.department, m.unit, m.is_mandatory, m.photo_required
+              ad.department, m.unit, m.is_mandatory
        FROM assessment_details ad
        JOIN checklist_items ci ON ad.checklist_item_id = ci.id
        JOIN materials m ON ad.material_id = m.id
@@ -193,7 +193,7 @@ export class AssessmentModel {
 
     // 2. Fetch all required checklist items with material definitions
     const checklistItems = await queryAll(
-      `SELECT ci.*, m.id as mat_id, m.material_code, m.material_name, m.department, m.is_mandatory, m.photo_required
+      `SELECT ci.*, m.id as mat_id, m.material_code, m.material_name, m.department, m.is_mandatory
        FROM checklist_items ci
        JOIN materials m ON ci.material_id = m.id
       WHERE ci.checklist_id = ? AND ci.is_active = 1 AND m.is_active = 1`,
@@ -254,11 +254,7 @@ export class AssessmentModel {
         throw new Error(`Bắt buộc nhập Remark (ghi chú nguyên nhân) cho vật tư bị FAIL: "${ci.material_name}"`);
       }
 
-      // Check Photo Requirement
       const photoUrl = (payload.photo_url || '').trim();
-      if (ci.photo_required && !photoUrl) {
-        throw new Error(`Vật tư "${ci.material_name}" yêu cầu hình ảnh chụp thực tế (Photo Required). Vui lòng tải/chụp hình trước khi nộp!`);
-      }
 
       if (itemOverall === 'PASS') totalScore += 100;
       totalEvaluated++;

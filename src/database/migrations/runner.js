@@ -2,8 +2,9 @@ import { fileURLToPath } from 'node:url';
 import { databasePath, initDbSchema, queryOne, withTransaction, closeDb } from '../db.js';
 import * as checklistMembershipHistory from './001_checklist_membership_history.js';
 import * as temporaryRestaurantPasswords from './002_temporary_restaurant_passwords.js';
+import * as removeRequiredMaterialPhotos from './003_remove_required_material_photos.js';
 
-const migrations = [checklistMembershipHistory, temporaryRestaurantPasswords];
+const migrations = [checklistMembershipHistory, temporaryRestaurantPasswords, removeRequiredMaterialPhotos];
 
 export async function runMigrations() {
   await initDbSchema();

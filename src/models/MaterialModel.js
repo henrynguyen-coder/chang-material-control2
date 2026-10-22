@@ -12,7 +12,7 @@ export class MaterialModel {
     return queryOne('SELECT * FROM materials WHERE id = ?', [id]);
   }
 
-  static async update(id, { material_code, material_name, department, category, unit, is_mandatory, photo_required } = {}) {
+  static async update(id, { material_code, material_name, department, category, unit, is_mandatory } = {}) {
     const current = await this.getById(id);
     if (!current) throw new Error('Vật tư không tồn tại');
 
@@ -24,7 +24,7 @@ export class MaterialModel {
       category: typeof category === 'string' ? category.trim() : current.category,
       unit: typeof unit === 'string' ? unit.trim() : current.unit,
       is_mandatory: is_mandatory === undefined ? current.is_mandatory : Number(is_mandatory === true || Number(is_mandatory) === 1),
-      photo_required: photo_required === undefined ? current.photo_required : Number(photo_required === true || Number(photo_required) === 1)
+      photo_required: 0
     };
 
     if (!updated.material_code || !updated.material_name || !updated.category || !updated.unit) {
@@ -45,7 +45,7 @@ export class MaterialModel {
     return this.getById(id);
   }
 
-  static async create({ material_code, material_name, department, category, unit, is_mandatory = 1, photo_required = 0 } = {}) {
+  static async create({ material_code, material_name, department, category, unit, is_mandatory = 1 } = {}) {
     const code = String(material_code || '').trim().toUpperCase();
     const name = String(material_name || '').trim();
     const materialCategory = String(category || '').trim();
@@ -62,10 +62,10 @@ export class MaterialModel {
     const now = new Date().toISOString();
     await executeSql(
       `INSERT INTO materials (id, material_code, material_name, department, category, unit, is_mandatory, photo_required, is_active, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)`,
+       VALUES (?, ?, ?, ?, ?, ?, ?, 0, 1, ?, ?)`,
       [id, code, name, department, materialCategory, materialUnit,
         Number(is_mandatory === true || Number(is_mandatory) === 1),
-        Number(photo_required === true || Number(photo_required) === 1), now, now]
+        now, now]
     );
     return this.getById(id);
   }

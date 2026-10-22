@@ -266,7 +266,6 @@ export class AdminPanel {
                   <th>Tên Nguyên Vật Liệu</th>
                   <th>Phân Loại</th>
                   <th>Bắt Buộc</th>
-                  <th>Photo Required</th>
                   <th>Status</th>
                   <th>Thao Tác</th>
                 </tr>
@@ -279,7 +278,6 @@ export class AdminPanel {
                     <td>${m.material_name}</td>
                     <td>${m.category}</td>
                     <td>${m.is_mandatory ? '🔴 Yes' : '⚪ Optional'}</td>
-                    <td>${m.photo_required ? '📷 Yes' : 'No'}</td>
                     <td><span class="badge ${m.is_active ? 'badge-completed' : 'badge-overdue'}">${m.is_active ? 'ACTIVE' : 'INACTIVE'}</span></td>
                     <td><div class="action-buttons"><button class="btn btn-secondary btn-sm edit-material-btn" data-id="${m.id}" type="button">Sửa</button><button class="btn ${m.is_active ? 'btn-danger' : 'btn-success'} btn-sm toggle-material-btn" data-id="${m.id}" data-active="${m.is_active ? 1 : 0}" type="button">${m.is_active ? 'Tắt' : 'Bật'}</button></div></td>
                   </tr>
@@ -637,7 +635,6 @@ export class AdminPanel {
       <label class="form-group"><span class="form-label">Phân loại</span><input class="form-input" id="master-material-category" value="${this.escapeHtml(material?.category || '')}" required></label>
       <label class="form-group"><span class="form-label">Đơn vị</span><input class="form-input" id="master-material-unit" value="${this.escapeHtml(material?.unit || '')}" required></label>
       <label class="form-group"><span class="form-label">Bắt buộc</span><select class="form-select" id="master-material-mandatory"><option value="1" ${!material || material.is_mandatory ? 'selected' : ''}>Có</option><option value="0" ${material && !material.is_mandatory ? 'selected' : ''}>Không</option></select></label>
-      <label class="form-group"><span class="form-label">Yêu cầu ảnh</span><select class="form-select" id="master-material-photo"><option value="1" ${material?.photo_required ? 'selected' : ''}>Có</option><option value="0" ${!material?.photo_required ? 'selected' : ''}>Không</option></select></label>
     `;
     modal.classList.add('active');
   }
@@ -707,8 +704,7 @@ export class AdminPanel {
           department: container.querySelector('#master-material-department').value,
           category: container.querySelector('#master-material-category').value,
           unit: container.querySelector('#master-material-unit').value,
-          is_mandatory: Number(container.querySelector('#master-material-mandatory').value),
-          photo_required: Number(container.querySelector('#master-material-photo').value)
+          is_mandatory: Number(container.querySelector('#master-material-mandatory').value)
         };
       } else {
         const roleCode = container.querySelector('#master-user-role').value;

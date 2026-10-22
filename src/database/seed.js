@@ -225,12 +225,12 @@ export async function runSeed() {
   const sampleMaterials = [
     // FOH Materials
     { id: 'mat-foh-01', code: 'MAT-FOH-01', name: 'Trà Thái Đỏ Ủ Sẵn (Bar)', department: 'FOH', category: 'Beverages', unit: 'Lít', mandatory: 1, photo: 0, min_temp: 1, max_temp: 4 },
-    { id: 'mat-foh-02', code: 'MAT-FOH-02', name: 'Đá Viên Sạch Kháng Khuẩn', department: 'FOH', category: 'Ice & Cold', unit: 'Kg', mandatory: 1, photo: 1, min_temp: -5, max_temp: 0 },
+    { id: 'mat-foh-02', code: 'MAT-FOH-02', name: 'Đá Viên Sạch Kháng Khuẩn', department: 'FOH', category: 'Ice & Cold', unit: 'Kg', mandatory: 1, photo: 0, min_temp: -5, max_temp: 0 },
     { id: 'mat-foh-03', code: 'MAT-FOH-03', name: 'Dừa Tươi Bến Tre Nhập Kho', department: 'FOH', category: 'Beverages', unit: 'Quả', mandatory: 0, photo: 0, min_temp: 5, max_temp: 15 },
     
     // BOH Materials
-    { id: 'mat-boh-01', code: 'MAT-BOH-01', name: 'Nước Cốt Tom Yum Special', department: 'BOH', category: 'Sauces & Soup', unit: 'Lít', mandatory: 1, photo: 1, min_temp: 1, max_temp: 4 },
-    { id: 'mat-boh-02', code: 'MAT-BOH-02', name: 'Thịt Heo Ba Chỉ Nhập Khẩu', department: 'BOH', category: 'Meat', unit: 'Kg', mandatory: 1, photo: 1, min_temp: -18, max_temp: -12 },
+    { id: 'mat-boh-01', code: 'MAT-BOH-01', name: 'Nước Cốt Tom Yum Special', department: 'BOH', category: 'Sauces & Soup', unit: 'Lít', mandatory: 1, photo: 0, min_temp: 1, max_temp: 4 },
+    { id: 'mat-boh-02', code: 'MAT-BOH-02', name: 'Thịt Heo Ba Chỉ Nhập Khẩu', department: 'BOH', category: 'Meat', unit: 'Kg', mandatory: 1, photo: 0, min_temp: -18, max_temp: -12 },
     { id: 'mat-boh-03', code: 'MAT-BOH-03', name: 'Tôm Sú Tươi Sống', department: 'BOH', category: 'Seafood', unit: 'Kg', mandatory: 1, photo: 0, min_temp: 0, max_temp: 2 },
     { id: 'mat-boh-04', code: 'MAT-BOH-04', name: 'Rau Quế & Ngò Gai Thái Fresh', department: 'BOH', category: 'Vegetables', unit: 'Kg', mandatory: 0, photo: 0, min_temp: 4, max_temp: 10 }
   ];
@@ -256,10 +256,10 @@ export async function runSeed() {
 
   const chkItems = [
     { id: 'item-f01', material_id: 'mat-foh-01', display_order: 1, req: 'Trà đậm vị, không chua, độ lạnh 1°C - 4°C', target: 3 },
-    { id: 'item-f02', material_id: 'mat-foh-02', display_order: 2, req: 'Đá trong suốt, không mùi lạ, chụp ảnh hộc đá', target: -2 },
+    { id: 'item-f02', material_id: 'mat-foh-02', display_order: 2, req: 'Đá trong suốt, không mùi lạ', target: -2 },
     { id: 'item-f03', material_id: 'mat-foh-03', display_order: 3, req: 'Vỏ xanh, nước ngọt tự nhiên', target: 10 },
-    { id: 'item-b01', material_id: 'mat-boh-01', display_order: 4, req: 'Nước cốt Tom Yum sánh mịn, đúng chuẩn vị Thái, chụp ảnh mẫu', target: 3 },
-    { id: 'item-b02', material_id: 'mat-boh-02', display_order: 5, req: 'Đông lạnh chuẩn (≤ -12°C), thịt đỏ tươi, chụp ảnh tem hạn dùng', target: -15 },
+    { id: 'item-b01', material_id: 'mat-boh-01', display_order: 4, req: 'Nước cốt Tom Yum sánh mịn, đúng chuẩn vị Thái', target: 3 },
+    { id: 'item-b02', material_id: 'mat-boh-02', display_order: 5, req: 'Đông lạnh chuẩn (≤ -12°C), thịt đỏ tươi', target: -15 },
     { id: 'item-b03', material_id: 'mat-boh-03', display_order: 6, req: 'Tôm tươi sống bơi khỏe / ướp đá vẩy (0°C - 2°C)', target: 1 },
     { id: 'item-b04', material_id: 'mat-boh-04', display_order: 7, req: 'Rau tươi xanh không dập nát', target: 5 }
   ];
