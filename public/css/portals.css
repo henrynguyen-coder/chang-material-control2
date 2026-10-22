@@ -247,10 +247,13 @@
 
 /* Phase 7 - AC / L&D Control Center */
 .ac-control-center {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: stretch;
   gap: 18px;
+  width: 100%;
   min-width: 0;
+  container-type: inline-size;
 }
 
 .ac-control-header .greeting-name {
@@ -363,7 +366,8 @@
 
 .ac-kpis {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  width: 100%;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
   gap: 10px;
 }
 
@@ -385,6 +389,7 @@
   color: var(--color-text-muted);
   font-size: 0.72rem;
   font-weight: 800;
+  line-height: 1.35;
 }
 
 .ac-kpi strong {
@@ -550,6 +555,10 @@
 }
 
 .ac-monitor-card-footer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
   padding-top: 10px;
   border-top: 1px solid var(--color-border-subtle);
 }
@@ -588,6 +597,7 @@
   display: flex;
   flex-direction: column;
   align-items: flex-end;
+  min-width: 0;
   gap: 3px;
 }
 
@@ -595,6 +605,7 @@
   color: var(--color-text-muted);
   font-size: 0.65rem;
   font-weight: 800;
+  text-align: right;
 }
 
 .ac-last-update strong {
@@ -836,6 +847,38 @@
 
   .ac-kpi-total {
     grid-column: auto;
+  }
+}
+
+@container (max-width: 760px) {
+  .ac-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ac-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ac-kpi-total {
+    grid-column: 1 / -1;
+  }
+
+  .ac-monitoring-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@container (max-width: 420px) {
+  .ac-kpis {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ac-kpi-total {
+    grid-column: auto;
+  }
+
+  .ac-monitor-card {
+    padding: 14px;
   }
 }
 
