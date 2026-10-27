@@ -1135,8 +1135,10 @@
 .history-modal-card {
   display: flex;
   flex-direction: column;
-  width: min(1180px, calc(100vw - 24px));
-  max-height: 92vh;
+  width: min(1700px, calc(100vw - 32px));
+  height: min(94vh, 1000px);
+  max-height: 94vh;
+  overflow: hidden;
 }
 
 .history-modal-card .modal-header {
@@ -1189,8 +1191,56 @@
 }
 
 .history-table-body {
-  min-height: 120px;
+  flex: 1 1 auto;
+  min-height: 0;
   overflow: auto;
+}
+
+.history-list-view[hidden],
+.history-detail-view[hidden] {
+  display: none !important;
+}
+
+.history-assessment-table {
+  min-width: 1080px;
+}
+
+.history-assessment-table th,
+.history-assessment-table td {
+  padding: 11px 12px;
+  vertical-align: middle;
+}
+
+.history-fail-count {
+  color: var(--color-status-overdue);
+}
+
+.history-detail-view {
+  min-width: 0;
+}
+
+.history-detail-heading {
+  margin: 16px 0 0;
+  color: var(--color-burgundy-primary);
+  font-size: 1.15rem;
+}
+
+.history-detail-view > h3:not(.history-detail-heading) {
+  margin: 20px 0 10px;
+  color: var(--color-burgundy-primary);
+  font-size: 1rem;
+}
+
+.history-detail-summary {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.history-detail-table {
+  min-width: 1150px;
+}
+
+.history-detail-back {
+  margin-bottom: 4px;
 }
 
 .history-empty {
@@ -1838,6 +1888,12 @@
 }
 
 @media (max-width: 700px) {
+  .history-modal-card {
+    width: calc(100vw - 16px);
+    height: 96vh;
+    max-height: 96vh;
+  }
+
   .ac-control-header {
     flex-wrap: wrap;
   }
@@ -1848,6 +1904,10 @@
   }
 
   .history-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .history-detail-summary {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
