@@ -4,6 +4,8 @@ import { ChecklistHistoryView } from './ChecklistHistoryView.js';
 
 export class RestaurantPortal {
   static timerInterval = null;
+  static successMessage = '';
+  static container = null;
 
   static getBusinessDate(date = new Date()) {
     const parts = new Intl.DateTimeFormat('en-CA', {
@@ -18,8 +20,11 @@ export class RestaurantPortal {
 
   static async render(container) {
     if (this.timerInterval) clearInterval(this.timerInterval);
+    this.container = container;
 
     const user = Store.user;
+    const successMessage = this.successMessage;
+    this.successMessage = '';
     const restaurantName = user?.restaurant_name || 'Nhà Hàng Chang';
 
     const now = new Date();
@@ -54,6 +59,7 @@ export class RestaurantPortal {
 
     container.innerHTML = `
       <div class="restaurant-dashboard">
+        ${successMessage ? `<div class="checklist-success-message" role="status" aria-live="polite">✓ ${successMessage}</div>` : ''}
         <!-- Header Welcome Banner -->
         <div class="welcome-card">
           <div class="app-subtitle">CHANG MATERIAL CONTROL</div>
@@ -499,8 +505,9 @@ export class RestaurantPortal {
 
           localStorage.removeItem(this.getDraftKey(shiftType));
           modal.classList.remove('active');
-          alert('✓ Gửi báo cáo kiểm tra đầu ca thành công!');
-          this.render(document.querySelector('#app-view-container'));
+          const shiftLabel = { MORNING: 'ca sáng', MID_SHIFT: 'ca giữa', EVENING: 'ca tối' }[shiftType] || 'ca làm việc';
+          this.successMessage = `Đã nộp bài đánh giá ${shiftLabel} thành công. Dữ liệu đã được ghi nhận.`;
+          this.render(this.container || document.querySelector('#app-view-container'));
         } catch (err) {
           alert(`❌ Lỗi hệ thống: ${err.message}`);
           submitBtn.disabled = false;

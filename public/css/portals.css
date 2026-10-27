@@ -65,6 +65,17 @@
   gap: 16px;
 }
 
+.checklist-success-message {
+  padding: 14px 18px;
+  border: 1px solid #a8d7b1;
+  border-left: 5px solid var(--color-status-completed);
+  border-radius: 8px;
+  background: #eaf5ec;
+  color: #176b37;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
 .welcome-card {
   background: linear-gradient(135deg, var(--color-burgundy-dark) 0%, var(--color-burgundy-primary) 100%);
   color: var(--color-warm-white);
@@ -724,8 +735,9 @@
 }
 
 .ac-detail-modal {
-  width: min(1180px, calc(100vw - 28px));
-  max-height: 90vh;
+  width: 96vw;
+  max-width: none;
+  max-height: 94vh;
   overflow: auto;
 }
 
@@ -889,6 +901,21 @@
 
 .ac-assessment-detail-table {
   min-width: 1050px;
+}
+
+@media (min-width: 701px) {
+  .ac-assessment-detail-table {
+    width: 100%;
+    min-width: 0;
+    table-layout: fixed;
+  }
+
+  .ac-assessment-detail-table th:nth-child(1) { width: 25%; }
+  .ac-assessment-detail-table th:nth-child(2) { width: 9%; }
+  .ac-assessment-detail-table th:nth-child(3) { width: 30%; }
+  .ac-assessment-detail-table th:nth-child(4) { width: 11%; }
+  .ac-assessment-detail-table th:nth-child(5) { width: 11%; }
+  .ac-assessment-detail-table th:nth-child(6) { width: 14%; }
 }
 
 .ac-assessment-detail-table td:first-child {
@@ -1135,7 +1162,8 @@
 .history-modal-card {
   display: flex;
   flex-direction: column;
-  width: min(1700px, calc(100vw - 32px));
+  width: 96vw;
+  max-width: none;
   height: min(94vh, 1000px);
   max-height: 94vh;
   overflow: hidden;
@@ -1166,6 +1194,10 @@
   gap: 8px;
   padding: 12px;
   border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.history-modal-restaurant .history-filters {
+  grid-template-columns: repeat(4, minmax(110px, 1fr)) auto;
 }
 
 .history-filters label {
@@ -1236,7 +1268,9 @@
 }
 
 .history-detail-table {
-  min-width: 1150px;
+  width: 100%;
+  min-width: 0;
+  table-layout: fixed;
 }
 
 .history-detail-back {
@@ -1904,6 +1938,10 @@
   }
 
   .history-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .history-modal-restaurant .history-filters {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 

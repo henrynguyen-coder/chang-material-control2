@@ -12,7 +12,7 @@ export class ChecklistHistoryView {
     modal.setAttribute('aria-modal', 'true');
     modal.setAttribute('aria-labelledby', 'checklist-history-title');
     modal.innerHTML = `
-      <div class="modal-card history-modal-card">
+      <div class="modal-card history-modal-card ${restaurantOnly ? 'history-modal-restaurant' : ''}">
         <div class="modal-header">
           <h2 id="checklist-history-title">Lịch sử đánh giá</h2>
           <button class="history-modal-close" type="button" aria-label="Đóng">&times;</button>
