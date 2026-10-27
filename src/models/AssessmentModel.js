@@ -78,6 +78,7 @@ export class AssessmentModel {
              COALESCE(ad.material_code_snapshot, m.material_code) as material_code,
              COALESCE(ad.material_name_snapshot, m.material_name) as material_name,
              ad.department,
+             ad.color_result, ad.smell_result, ad.taste_result, ad.quality_result,
              ad.overall_result, ad.allowed_to_serve, ad.remark, ad.photo_url
       FROM assessment_details ad
       JOIN material_assessments ma ON ad.assessment_id = ma.id

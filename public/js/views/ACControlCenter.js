@@ -396,7 +396,7 @@ export class ACControlCenter {
       return `<tr class="priority-${status.toLowerCase().replace('_', '-')}">
         <td class="ac-monitoring-restaurant"><span class="ac-restaurant-code">${this.escapeHtml(restaurant.restaurant_code)}</span><button class="ac-restaurant-name restaurant-detail-trigger" title="Xem phiếu đánh giá và kết quả" type="button" data-restaurant-id="${this.escapeHtml(restaurant.id)}">${this.escapeHtml(restaurant.restaurant_name)}</button></td>
         <td>${badge(status)}</td><td>${badge(morning?.status || 'PENDING')}</td><td>${badge(evening?.status || 'PENDING')}</td>
-        <td><button class="ac-material-issue-trigger material-issue-trigger" type="button" data-restaurant-id="${this.escapeHtml(restaurant.id)}" aria-label="Xem ${issues.length} lỗi vật tư">${issues.length} <span>Chi tiết</span></button></td>
+        <td><button class="ac-material-issue-trigger material-issue-trigger" type="button" data-restaurant-id="${this.escapeHtml(restaurant.id)}" aria-label="Xem ${issues.length} lỗi vật tư"><strong>${issues.length}</strong><span>Xem lỗi</span></button></td>
         <td class="ac-monitoring-updated">${latest ? this.formatTime(latest.submitted_at || latest.created_at) : '--'}</td>
       </tr>`;
     }).join('');
@@ -558,6 +558,10 @@ export class ACControlCenter {
       <article class="ac-issue-row">
         <div class="ac-issue-heading"><strong>${this.escapeHtml(issue.material_name)}</strong><span class="badge badge-overdue">${this.escapeHtml(issue.department)}</span></div>
         <div class="ac-issue-meta"><span>${this.escapeHtml(issue.shift_type)}</span><span>${this.escapeHtml(issue.material_code)}</span><span>${this.escapeHtml(issue.inspector_name)}</span></div>
+        <div class="ac-issue-failures">${[
+          ['Màu sắc', issue.color_result], ['Mùi', issue.smell_result],
+          ['Vị', issue.taste_result], ['Chất lượng', issue.quality_result]
+        ].filter(([, result]) => result === 'FAIL').map(([label]) => `<span class="ac-failed-criterion">Không đạt: ${label}</span>`).join('') || '<span class="ac-failed-criterion">Kết quả tổng: Không đạt</span>'}</div>
         <p>${this.escapeHtml(issue.remark || 'Không có ghi chú')}</p>
         ${issue.photo_url ? '<span class="ac-photo-available">Có ảnh đính kèm</span>' : ''}
       </article>

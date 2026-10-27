@@ -941,6 +941,24 @@
   font-size: 0.72rem;
 }
 
+.ac-issue-failures {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.ac-failed-criterion {
+  display: inline-flex;
+  padding: 5px 8px;
+  border: 1px solid #f2c2bd;
+  border-radius: 999px;
+  background: #fff0ef;
+  color: var(--color-status-overdue);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
 .ac-issue-row p {
   margin: 8px 0 0;
   overflow-wrap: anywhere;
