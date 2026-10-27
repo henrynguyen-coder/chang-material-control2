@@ -66,7 +66,7 @@ export class ACControlCenter {
             <select class="form-select" id="filter-material"><option value="">Tất cả vật tư</option></select>
           </label>
           <button class="btn btn-secondary ac-refresh-btn" id="refresh-ac-btn" type="button" aria-label="Làm mới dữ liệu">↻ Làm mới</button>
-        </div>
+        </section>
 
         <section class="ac-kpis" aria-label="Control center KPIs">
           <article class="ac-kpi ac-kpi-total"><span>TỔNG NHÀ HÀNG</span><strong id="stat-total-restaurants">--</strong></article>
