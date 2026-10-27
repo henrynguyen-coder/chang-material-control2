@@ -7,6 +7,7 @@ export class ACControlCenter {
   static container = null;
   static state = null;
   static notifications = [];
+  static detailRestaurantId = null;
   static notificationTimer = null;
   static viewVersion = 0;
 
@@ -19,11 +20,11 @@ export class ACControlCenter {
         <header class="welcome-card ac-control-header">
           <div class="ac-control-copy">
             <div class="app-subtitle">AC / L&amp;D CONTROL CENTER</div>
-            <h1 class="greeting-name">TODAY'S CONTROL CENTER</h1>
+            <h1 class="greeting-name">TRUNG TÂM GIÁM SÁT HÔM NAY</h1>
             <div class="current-date">Theo dõi tình trạng kiểm tra nguyên vật liệu theo nhà hàng và ca</div>
           </div>
           <div class="ac-control-actions">
-            <button class="btn btn-secondary ac-history-button" id="open-ac-history" type="button">Checklist History</button>
+            <button class="btn btn-secondary ac-history-button" id="open-ac-history" type="button">Lịch sử đánh giá</button>
             <button class="ac-notification-button" id="open-notifications" type="button" aria-label="Mở Notification Center">
               <span aria-hidden="true">🔔</span> Notifications
               <span class="ac-notification-count" id="notification-count" hidden>0</span>
@@ -32,55 +33,56 @@ export class ACControlCenter {
         </header>
 
         <section class="ac-filters" aria-label="Bộ lọc giám sát">
-          <label class="ac-filter-field">Date
+          <label class="ac-filter-field">Ngày
             <input class="form-input" id="filter-date" type="date" value="${this.getLocalDate()}">
           </label>
-          <label class="ac-filter-field">Restaurant
+          <label class="ac-filter-field">Nhà hàng
             <select class="form-select" id="filter-restaurant"><option value="">Tất cả nhà hàng</option></select>
           </label>
-          <label class="ac-filter-field">Shift
+          <label class="ac-filter-field">Ca
             <select class="form-select" id="filter-shift">
               <option value="">Tất cả ca</option>
-              <option value="MORNING">MORNING</option>
-              <option value="EVENING">EVENING</option>
+              <option value="MORNING">Ca sáng</option>
+              <option value="EVENING">Ca tối</option>
             </select>
           </label>
-          <label class="ac-filter-field">Status
+          <label class="ac-filter-field">Trạng thái
             <select class="form-select" id="filter-status">
               <option value="">Tất cả trạng thái</option>
-              <option value="OVERDUE">Overdue</option>
-              <option value="MATERIAL_FAIL">Material Fail</option>
-              <option value="PENDING">Pending</option>
-              <option value="COMPLETED">Completed</option>
+              <option value="OVERDUE">Quá hạn</option>
+              <option value="MATERIAL_FAIL">Lỗi vật tư</option>
+              <option value="PENDING">Đang chờ</option>
+              <option value="COMPLETED">Hoàn thành</option>
             </select>
           </label>
-          <label class="ac-filter-field">Department
+          <label class="ac-filter-field">Bộ phận
             <select class="form-select" id="filter-department">
               <option value="">Tất cả bộ phận</option>
               <option value="FOH">FOH</option>
               <option value="BOH">BOH</option>
             </select>
           </label>
-          <label class="ac-filter-field">Material
+          <label class="ac-filter-field">Vật tư
             <select class="form-select" id="filter-material"><option value="">Tất cả vật tư</option></select>
           </label>
           <button class="btn btn-secondary ac-refresh-btn" id="refresh-ac-btn" type="button" aria-label="Làm mới dữ liệu">↻ Làm mới</button>
         </div>
 
         <section class="ac-kpis" aria-label="Control center KPIs">
-          <article class="ac-kpi ac-kpi-total"><span>TOTAL RESTAURANTS</span><strong id="stat-total-restaurants">--</strong></article>
-          <article class="ac-kpi"><span>MORNING COMPLETED</span><strong id="stat-morning-completed">--</strong></article>
-          <article class="ac-kpi"><span>EVENING COMPLETED</span><strong id="stat-evening-completed">--</strong></article>
-          <article class="ac-kpi ac-kpi-overdue"><span>OVERDUE</span><strong id="stat-overdue">--</strong></article>
-          <article class="ac-kpi ac-kpi-fail"><span>MATERIAL FAIL</span><strong id="stat-material-fail">--</strong></article>
+          <article class="ac-kpi ac-kpi-total"><span>TỔNG NHÀ HÀNG</span><strong id="stat-total-restaurants">--</strong></article>
+          <article class="ac-kpi"><span>CA SÁNG HOÀN THÀNH</span><strong id="stat-morning-completed">--</strong></article>
+          <article class="ac-kpi"><span>CA TỐI HOÀN THÀNH</span><strong id="stat-evening-completed">--</strong></article>
+          <article class="ac-kpi ac-kpi-overdue"><span>CA QUÁ HẠN</span><strong id="stat-overdue">--</strong></article>
+          <article class="ac-kpi ac-kpi-fail"><span>LỖI VẬT TƯ</span><strong id="stat-material-fail">--</strong></article>
         </section>
 
         <section class="ac-monitoring-section" aria-labelledby="monitoring-title">
           <div class="section-title">
-            <h2 id="monitoring-title">RESTAURANT MONITORING</h2>
+            <h2 id="monitoring-title">THEO DÕI NHÀ HÀNG</h2>
             <span id="monitoring-count" class="ac-result-count"></span>
           </div>
-          <div class="ac-monitoring-grid" id="monitoring-grid" aria-live="polite">
+          <p class="ac-monitoring-help">Chọn tên nhà hàng để xem danh sách phiếu, người đánh giá và kết quả từng vật tư.</p>
+          <div class="table-responsive ac-monitoring-table-wrap" id="monitoring-grid" aria-live="polite">
             <p class="ac-empty-state">Đang tải dữ liệu giám sát...</p>
           </div>
         </section>
@@ -174,6 +176,14 @@ export class ACControlCenter {
 
       const restaurantButton = event.target.closest('.restaurant-detail-trigger');
       if (restaurantButton) this.showRestaurantDetail(restaurantButton.dataset.restaurantId);
+    });
+    container.querySelector('#restaurant-detail-body').addEventListener('click', event => {
+      const detailButton = event.target.closest('.assessment-detail-trigger');
+      if (detailButton) {
+        this.showAssessmentDetail(detailButton.dataset.assessmentId);
+        return;
+      }
+      if (event.target.closest('.assessment-history-back')) this.showRestaurantDetail(this.detailRestaurantId);
     });
     container.querySelector('#notification-list').addEventListener('click', event => {
       const notification = event.target.closest('.ac-notification-item');
@@ -377,43 +387,21 @@ export class ACControlCenter {
 
     this.container.querySelector('#monitoring-count').textContent = `${cards.length} / ${restaurants.length} nhà hàng`;
     const grid = this.container.querySelector('#monitoring-grid');
-    if (!cards.length) {
-      grid.innerHTML = '<p class="ac-empty-state">Không có nhà hàng phù hợp với bộ lọc.</p>';
-      return;
-    }
-
-    grid.innerHTML = cards.map(({ restaurant, issues, shiftStates, status }) => {
+    const labels = { OVERDUE: 'Quá hạn', MATERIAL_FAIL: 'Lỗi vật tư', PENDING: 'Đang chờ', COMPLETED: 'Hoàn thành' };
+    const tableRows = cards.map(({ restaurant, issues, status }) => {
       const latest = this.getLatestAssessment(restaurant.id);
-      return `
-        <article class="ac-monitor-card priority-${status.toLowerCase().replace('_', '-')}">
-          <div class="ac-monitor-card-header">
-            <div>
-              <span class="ac-restaurant-code">${this.escapeHtml(restaurant.restaurant_code)}</span>
-              <button class="ac-restaurant-name restaurant-detail-trigger" type="button" data-restaurant-id="${this.escapeHtml(restaurant.id)}">
-                ${this.escapeHtml(restaurant.restaurant_name)}
-              </button>
-            </div>
-            <span class="ac-priority-label priority-label-${status.toLowerCase().replace('_', '-')}">${this.statusLabel(status)}</span>
-          </div>
-          <div class="ac-shift-status-list">
-            ${shiftStates.map(shift => `
-              <div class="ac-shift-status">
-                <span>${shift.code}</span>
-                <strong class="shift-state state-${shift.status.toLowerCase()}">${this.statusLabel(shift.status)}</strong>
-              </div>
-            `).join('')}
-          </div>
-          <div class="ac-monitor-card-footer">
-            <button class="ac-material-issue-trigger material-issue-trigger" type="button" data-restaurant-id="${this.escapeHtml(restaurant.id)}">
-              <span>MATERIAL ISSUE</span><strong>${issues.length}</strong>
-            </button>
-            <div class="ac-last-update"><span>LAST UPDATE</span><strong>${latest ? this.formatTime(latest.submitted_at || latest.created_at) : '--'}</strong></div>
-          </div>
-        </article>
-      `;
+      const morning = this.getShiftState(restaurant.id, 'MORNING');
+      const evening = this.getShiftState(restaurant.id, 'EVENING');
+      const badge = value => `<span class="ac-status-badge state-${value.toLowerCase().replace('_', '-')}">${labels[value] || value}</span>`;
+      return `<tr class="priority-${status.toLowerCase().replace('_', '-')}">
+        <td class="ac-monitoring-restaurant"><span class="ac-restaurant-code">${this.escapeHtml(restaurant.restaurant_code)}</span><button class="ac-restaurant-name restaurant-detail-trigger" title="Xem phiếu đánh giá và kết quả" type="button" data-restaurant-id="${this.escapeHtml(restaurant.id)}">${this.escapeHtml(restaurant.restaurant_name)}</button></td>
+        <td>${badge(status)}</td><td>${badge(morning?.status || 'PENDING')}</td><td>${badge(evening?.status || 'PENDING')}</td>
+        <td><button class="ac-material-issue-trigger material-issue-trigger" type="button" data-restaurant-id="${this.escapeHtml(restaurant.id)}" aria-label="Xem ${issues.length} lỗi vật tư">${issues.length} <span>Chi tiết</span></button></td>
+        <td class="ac-monitoring-updated">${latest ? this.formatTime(latest.submitted_at || latest.created_at) : '--'}</td>
+      </tr>`;
     }).join('');
+    grid.innerHTML = `<table class="data-table ac-monitoring-table"><thead><tr><th>Nhà hàng</th><th>Tình trạng</th><th>Ca sáng</th><th>Ca tối</th><th>Lỗi vật tư</th><th>Cập nhật gần nhất</th></tr></thead><tbody>${tableRows || '<tr><td colspan="6" class="report-empty">Không có nhà hàng phù hợp với bộ lọc.</td></tr>'}</tbody></table>`;
   }
-
   static renderKpis(restaurants) {
     const morningCompleted = restaurants.filter(restaurant => this.getShiftState(restaurant.id, 'MORNING').status === 'COMPLETED').length;
     const eveningCompleted = restaurants.filter(restaurant => this.getShiftState(restaurant.id, 'EVENING').status === 'COMPLETED').length;
@@ -466,9 +454,9 @@ export class ACControlCenter {
 
   static statusLabel(status) {
     return {
-      OVERDUE: 'Overdue',
-      MATERIAL_FAIL: 'Material Fail',
-      PENDING: 'Pending',
+      OVERDUE: 'Quá hạn',
+      MATERIAL_FAIL: 'Lỗi vật tư',
+      PENDING: 'Đang chờ',
       COMPLETED: '✓ Completed'
     }[status] || status;
   }
@@ -482,8 +470,11 @@ export class ACControlCenter {
   static showRestaurantDetail(restaurantId) {
     const restaurant = this.state.restaurants.find(item => item.id === restaurantId);
     if (!restaurant) return;
+    this.detailRestaurantId = restaurantId;
     const body = this.container.querySelector('#restaurant-detail-body');
-    const assessments = this.state.assessments.filter(item => item.restaurant_id === restaurantId);
+    const assessments = this.state.assessments
+      .filter(item => item.restaurant_id === restaurantId)
+      .sort((left, right) => new Date(right.submitted_at || right.created_at) - new Date(left.submitted_at || left.created_at));
     const issues = this.state.issues.filter(issue => issue.restaurant_id === restaurantId);
     this.container.querySelector('#restaurant-detail-title').textContent = restaurant.restaurant_name;
 
@@ -493,17 +484,61 @@ export class ACControlCenter {
       <div class="ac-detail-shifts">
         ${['MORNING', 'EVENING'].map(code => {
           const shift = this.getShiftState(restaurantId, code);
-          return `<div class="ac-detail-shift"><strong>${code}</strong><span class="shift-state state-${shift.status.toLowerCase()}">${this.statusLabel(shift.status)}</span>${shift.assessment ? `<span>${this.formatTime(shift.assessment.submitted_at || shift.assessment.created_at)}</span>` : ''}</div>`;
+          return `<div class="ac-detail-shift"><strong>${code === 'MORNING' ? 'Ca sáng' : 'Ca tối'}</strong><span class="ac-status-badge state-${shift.status.toLowerCase().replace('_', '-')}">${this.statusLabel(shift.status)}</span>${shift.assessment ? `<span>${this.formatTime(shift.assessment.submitted_at || shift.assessment.created_at)}</span>` : ''}</div>`;
         }).join('')}
       </div>
-      <h3>Assessment history</h3>
-      ${assessments.length ? `<div class="table-responsive"><table class="data-table"><thead><tr><th>Ca</th><th>Người kiểm tra</th><th>Điểm</th><th>Allowed to serve</th><th>Last update</th></tr></thead><tbody>${assessments.map(item => `<tr><td>${this.escapeHtml(item.shift_type)}</td><td>${this.escapeHtml(item.inspector_name)}</td><td>${this.escapeHtml(item.score)}%</td><td>${this.escapeHtml(item.overall_allowed_to_serve)}</td><td>${this.formatTime(item.submitted_at || item.created_at)}</td></tr>`).join('')}</tbody></table></div>` : '<p>Chưa có phiếu kiểm tra trong ngày này.</p>'}
-      <h3>Material issues (${issues.length})</h3>
+      <h3>Assessment history · ${assessments.length}</h3>
+      ${assessments.length ? `<div class="table-responsive"><table class="data-table ac-assessment-history-table"><thead><tr><th>Ca</th><th>Người đánh giá</th><th>Điểm</th><th>Đạt / lỗi</th><th>Kết luận</th><th>Thời gian</th><th></th></tr></thead><tbody>${assessments.map(item => `<tr><td>${item.shift_type === 'MORNING' ? 'Ca sáng' : 'Ca tối'}</td><td>${this.escapeHtml(item.inspector_name)}</td><td><strong>${this.escapeHtml(item.score)}%</strong></td><td>${Number(item.pass_count || 0)} đạt · ${Number(item.fail_count || 0)} lỗi / ${Number(item.total_count || 0)}</td><td><span class="ac-status-badge ${item.overall_allowed_to_serve === 'YES' ? 'state-completed' : 'state-overdue'}">${item.overall_allowed_to_serve === 'YES' ? 'Được phục vụ' : 'Không được phục vụ'}</span></td><td>${this.formatTime(item.submitted_at || item.created_at)}</td><td><button type="button" class="btn btn-secondary assessment-detail-trigger" data-assessment-id="${this.escapeHtml(item.id)}">Xem chi tiết</button></td></tr>`).join('')}</tbody></table></div>` : '<p>Chưa có phiếu đánh giá trong ngày này.</p>'}
+      <h3>Material issues · ${issues.length}</h3>
       ${this.renderIssueList(issues)}
     `;
     this.container.querySelector('#restaurant-detail-modal').classList.add('active');
   }
 
+  static async showAssessmentDetail(assessmentId) {
+    const body = this.container.querySelector('#restaurant-detail-body');
+    const restaurant = this.state.restaurants.find(item => item.id === this.detailRestaurantId);
+    if (!restaurant) return;
+    body.innerHTML = '<p class="ac-empty-state">Đang tải chi tiết bài đánh giá...</p>';
+    try {
+      const { assessment } = await Api.get(`/api/assessments/${encodeURIComponent(assessmentId)}`);
+      if (!assessment || assessment.restaurant_id !== this.detailRestaurantId) return;
+      const details = assessment.details || [];
+      const passed = details.filter(item => item.overall_result === 'PASS').length;
+      const failed = details.filter(item => item.overall_result === 'FAIL').length;
+      const criteria = [
+        ['Màu sắc', 'color_result'], ['Mùi', 'smell_result'],
+        ['Vị', 'taste_result'], ['Chất lượng', 'quality_result']
+      ];
+      const resultLabel = value => value === 'PASS' ? 'Đạt' : value === 'FAIL' ? 'Không đạt' : 'N/A';
+      const resultClass = value => value === 'PASS' ? 'state-completed' : value === 'FAIL' ? 'state-overdue' : 'state-pending';
+      this.container.querySelector('#restaurant-detail-title').textContent = `Chi tiết đánh giá · ${restaurant.restaurant_name}`;
+      body.innerHTML = `
+        <button type="button" class="btn btn-secondary assessment-history-back">← Quay lại danh sách đánh giá</button>
+        <div class="ac-assessment-summary">
+          <div><span>Nhà hàng</span><strong>${this.escapeHtml(restaurant.restaurant_code)} · ${this.escapeHtml(restaurant.restaurant_name)}</strong></div>
+          <div><span>Ca / ngày</span><strong>${assessment.shift_type === 'MORNING' ? 'Ca sáng' : 'Ca tối'} · ${this.escapeHtml(assessment.shift_date)}</strong></div>
+          <div><span>Người đánh giá</span><strong>${this.escapeHtml(assessment.inspector_name)}</strong></div>
+          <div><span>Điểm tổng</span><strong>${this.escapeHtml(assessment.score)}%</strong></div>
+          <div><span>Kết quả</span><strong>${passed} đạt · ${failed} lỗi / ${details.length} vật tư</strong></div>
+          <div><span>Quyết định phục vụ</span><strong class="${assessment.overall_allowed_to_serve === 'YES' ? 'state-completed' : 'state-overdue'}">${assessment.overall_allowed_to_serve === 'YES' ? 'Được phục vụ' : 'Không được phục vụ'}</strong></div>
+        </div>
+        ${assessment.notes ? `<p class="ac-assessment-notes"><strong>Ghi chú bài đánh giá:</strong> ${this.escapeHtml(assessment.notes)}</p>` : ''}
+        <h3>Kết quả từng vật tư · ${details.length}</h3>
+        <div class="table-responsive"><table class="data-table ac-assessment-detail-table"><thead><tr><th>Vật tư / yêu cầu</th><th>Bộ phận</th><th>Tiêu chí đánh giá</th><th>Kết quả</th><th>Được phục vụ</th><th>Ghi chú</th></tr></thead><tbody>
+          ${details.map(item => `<tr class="${item.overall_result === 'FAIL' ? 'assessment-failed-row' : ''}">
+            <td><strong>${this.escapeHtml(item.material_name)}</strong><small>${this.escapeHtml(item.material_code || '')}</small>${item.requirement_text ? `<p>${this.escapeHtml(item.requirement_text)}</p>` : ''}${item.target_temp !== null && item.target_temp !== undefined ? `<small>Nhiệt độ mục tiêu: ${this.escapeHtml(item.target_temp)}°</small>` : ''}</td>
+            <td>${this.escapeHtml(item.department)}</td>
+            <td><div class="ac-criteria-list">${criteria.map(([label, key]) => `<span class="ac-criterion ${resultClass(item[key])}"><b>${label}</b>${resultLabel(item[key])}</span>`).join('')}</div></td>
+            <td><span class="ac-status-badge ${resultClass(item.overall_result)}">${resultLabel(item.overall_result)}</span></td>
+            <td>${item.allowed_to_serve === 'YES' ? 'Có' : 'Không'}</td>
+            <td>${this.escapeHtml(item.remark || '—')}</td>
+          </tr>`).join('') || '<tr><td colspan="6">Không có dữ liệu chi tiết.</td></tr>'}
+        </tbody></table></div>`;
+    } catch (error) {
+      body.innerHTML = `<p class="report-error">Không thể tải chi tiết đánh giá: ${this.escapeHtml(error.message)}</p><button type="button" class="btn btn-secondary assessment-history-back">Quay lại danh sách đánh giá</button>`;
+    }
+  }
   static showMaterialIssueDetail(restaurantId) {
     const restaurant = this.state.restaurants.find(item => item.id === restaurantId);
     if (!restaurant) return;
