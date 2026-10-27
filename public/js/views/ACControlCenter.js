@@ -394,10 +394,10 @@ export class ACControlCenter {
       const evening = this.getShiftState(restaurant.id, 'EVENING');
       const badge = value => `<span class="ac-status-badge state-${value.toLowerCase().replace('_', '-')}">${labels[value] || value}</span>`;
       return `<tr class="priority-${status.toLowerCase().replace('_', '-')}">
-        <td class="ac-monitoring-restaurant"><span class="ac-restaurant-code">${this.escapeHtml(restaurant.restaurant_code)}</span><button class="ac-restaurant-name restaurant-detail-trigger" title="Xem phiếu đánh giá và kết quả" type="button" data-restaurant-id="${this.escapeHtml(restaurant.id)}">${this.escapeHtml(restaurant.restaurant_name)}</button></td>
-        <td>${badge(status)}</td><td>${badge(morning?.status || 'PENDING')}</td><td>${badge(evening?.status || 'PENDING')}</td>
-        <td><button class="ac-material-issue-trigger material-issue-trigger" type="button" data-restaurant-id="${this.escapeHtml(restaurant.id)}" aria-label="Xem ${issues.length} lỗi vật tư"><strong>${issues.length}</strong><span>Xem lỗi</span></button></td>
-        <td class="ac-monitoring-updated">${latest ? this.formatTime(latest.submitted_at || latest.created_at) : '--'}</td>
+        <td class="ac-monitoring-restaurant" data-label="Nhà hàng"><span class="ac-restaurant-code">${this.escapeHtml(restaurant.restaurant_code)}</span><button class="ac-restaurant-name restaurant-detail-trigger" title="Xem phiếu đánh giá và kết quả" type="button" data-restaurant-id="${this.escapeHtml(restaurant.id)}">${this.escapeHtml(restaurant.restaurant_name)}</button></td>
+        <td data-label="Tình trạng">${badge(status)}</td><td data-label="Ca sáng">${badge(morning?.status || 'PENDING')}</td><td data-label="Ca tối">${badge(evening?.status || 'PENDING')}</td>
+        <td data-label="Lỗi vật tư"><button class="ac-material-issue-trigger material-issue-trigger" type="button" data-restaurant-id="${this.escapeHtml(restaurant.id)}" aria-label="Xem ${issues.length} lỗi vật tư"><strong>${issues.length}</strong><span>Xem lỗi</span></button></td>
+        <td class="ac-monitoring-updated" data-label="Cập nhật gần nhất">${latest ? this.formatTime(latest.submitted_at || latest.created_at) : '--'}</td>
       </tr>`;
     }).join('');
     grid.innerHTML = `<table class="data-table ac-monitoring-table"><thead><tr><th>Nhà hàng</th><th>Tình trạng</th><th>Ca sáng</th><th>Ca tối</th><th>Lỗi vật tư</th><th>Cập nhật gần nhất</th></tr></thead><tbody>${tableRows || '<tr><td colspan="6" class="report-empty">Không có nhà hàng phù hợp với bộ lọc.</td></tr>'}</tbody></table>`;
